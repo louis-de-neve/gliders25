@@ -4,8 +4,9 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import geopy.distance as gp
 
+
+from transect_information import all_transect_indexes, short_or_missing_casts, offset_casts
 
 def import_data_from_mat_file(
         filename:str='Louis/data_631_allqc.mat',
@@ -55,28 +56,41 @@ def sanitise_casts(split_dataframes:list[pd.DataFrame]) -> list[pd.DataFrame]:
 
 
 class Cast:
-    def __init__(self, cast_data:pd.DataFrame):
+    def __init__(self, cast_data:pd.DataFrame, transect_index:int|None=None):
         self.data = cast_data
+        self.length = len(self.data["depth"])
         self.maximum_depth = cast_data["depth"].max()
         self.start_time = cast_data["DateTime"].iloc[0]
         self.start_location = [cast_data["latitude"].iloc[0], cast_data["longitude"].iloc[0]]
         self.end_location = [cast_data["latitude"].iloc[-1], cast_data["longitude"].iloc[-1]]
-        #self.cast_length = gp.geodesic(self.start_location, self.end_location).m
         self.cast_duration = cast_data["DateTime"].iloc[-1] - self.start_time
+        self.transect_index = transect_index
         
     def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0) -> pd.DataFrame:
         bins = np.arange(0, 1000, bin_size)
-        binned_data = self.data.groupby(pd.cut(self.data["depth"], bins), observed=True)[parameter].mean().reset_index()
+        binned_data = self.data.groupby(pd.cut(self.data["depth"], bins), observed=False)[parameter].mean().reset_index()
         binned_data.columns = ["depth_bin", f"binned_{parameter}"]
         binned_data = list(binned_data[f"binned_{parameter}"])
         binned_data += [np.nan] * int(1000/bin_size - len(binned_data))
         return binned_data
+    
+    def merge(self, other) -> None: # occurrs inplace and merges other into self
+        self.data = pd.concat([self.data, other.data], ignore_index=True)
+        self.maximum_depth = self.data["depth"].max()
+        self.start_time = self.data["DateTime"].iloc[0]
+        self.start_location = [self.data["latitude"].iloc[0], self.data["longitude"].iloc[0]]
+        self.end_location = [self.data["latitude"].iloc[-1], self.data["longitude"].iloc[-1]]
+        self.cast_duration = self.data["DateTime"].iloc[-1] - self.start_time
+        self.transect_index = self.transect_index
+        self.length = len(self.data["depth"])
 
 
-def two_dimensional_binning(valid_casts:list[Cast], parameter:str, bin_size:float=1.0) -> np.ndarray:
+def two_dimensional_binning(valid_casts:list[pd.DataFrame|Cast], parameter:str, bin_size:float=1.0) -> np.ndarray:
+    if type(valid_casts[0]) == pd.DataFrame:
+        valid_casts = [Cast(df) for df in valid_casts]
+
     data_array = []
-    for df in valid_casts:
-        cast = Cast(df)
+    for cast in valid_casts:
         binned_data = cast.apply_binning_to_parameter(parameter, bin_size)
         data_array.append(binned_data)
     
@@ -85,29 +99,127 @@ def two_dimensional_binning(valid_casts:list[Cast], parameter:str, bin_size:floa
     return data_array.T
 
 
-df = import_data_from_mat_file()
+def ts_plot(valid_casts, ax) -> None:
+    for df in valid_casts:
+        ax.scatter(df["salinity_final"], df["temperature_final"], c=df["chlorophyll"], norm=mpl.colors.LogNorm())
 
-#df = df.loc[:100000]
 
-valid_casts = split_dataframe_by_cast(df)
+def binned_plot(valid_casts:list[pd.DataFrame|Cast], ax:plt.axes) -> mpl.collections.PolyQuadMesh:
+    data_array = two_dimensional_binning(valid_casts, "chlorophyll", 0.5)
+    depth_bins = -np.arange(0, 1000, 0.5)
+    time_bins = np.arange(data_array.shape[1])/2
 
-data_array = two_dimensional_binning(valid_casts, "chlorophyll", 0.5)
+    X, Y = np.meshgrid(time_bins, depth_bins)
+    pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm(vmin=0.03, vmax=30))
+    ax.set_xlabel("Downcast number")
+    #ax.set_ylabel("Depth (m)")
+    return pcm
 
-depth_bins = -np.arange(0, 1000, 0.5)
-time_bins = np.arange(data_array.shape[1])/2
 
-X, Y = np.meshgrid(time_bins, depth_bins)
-plt.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm())
-plt.xlabel("Downcast number")
-plt.ylabel("Depth (m)")
-#plt.pcolor(data_array, norm=mpl.colors.LogNorm())
-plt.show()
 
-# for i, df in enumerate(valid_casts):
-#     cast = Cast(df)
-#     if i == 3:
-#         print(cast.apply_binning_to_parameter("chlorophyll"))
-#     #df["color"] = np.where(df["is_rising"], "r", "b")
-#     plt.scatter(np.full_like(df["depth"], df["DateTime"].iloc[0], dtype=pd._libs.tslibs.timestamps.Timestamp), -df["depth"], c=df["chlorophyll"], norm=mpl.colors.LogNorm())
+class Transect:
+    def __init__(self, name:str, casts:list[Cast]):
+        self.casts = casts
+        self.start_time = casts[0].start_time
+        self.finish_time = casts[-1].data["DateTime"].iloc[-1]
+        self.start_location = casts[0].start_location
+        self.finish_location = casts[-1].end_location
+        self.name = name
 
-plt.show()
+
+def create_transects(valid_casts:list[pd.DataFrame], sanitise:bool=True) -> list[Transect]:
+    all_transects = []
+    for transect_name, transect_indices in all_transect_indexes.items():
+        
+        start, end = transect_indices
+        transect_casts = valid_casts[start:end+1]
+
+        casts_with_offsets = offset_casts.get(transect_name, [])
+        casts_with_errors = short_or_missing_casts.get(transect_name, []) + casts_with_offsets
+
+        transect_casts_sanitised = []
+        for i, cast_dataframe in enumerate(transect_casts):
+            cast = Cast(cast_dataframe, transect_index=i)
+
+            if (not sanitise) or (i not in casts_with_errors): # If sanitise is False, don't sanitise and if there is no problems, append 
+                transect_casts_sanitised.append(cast)
+
+            elif i in casts_with_offsets: # applies only to casts_with_offsets
+                print("here")
+                if i+1 in casts_with_offsets: # i.e. only the first offset cast
+                    print(cast.start_time, cast.length)
+
+                    cast.merge(Cast(transect_casts[i+1], transect_index=i+1))
+
+                    print(cast.start_time, cast.length)
+                    transect_casts_sanitised.append(cast)
+
+            else: # applies only to short or missing casts
+                pass
+                
+
+        if sanitise:
+            if transect_name == "B":
+                pass
+
+        all_transects.append(Transect(transect_name, transect_casts_sanitised))
+    
+    return all_transects
+
+
+
+
+
+def run():
+    df = import_data_from_mat_file(parameters=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final"])
+
+    #df = df.loc[:100000]
+
+
+    valid_casts = split_dataframe_by_cast(df)
+
+    transects = create_transects(valid_casts, sanitise=True)
+
+    fig, axs = plt.subplots(2, 5, figsize=(30, 10), sharey=True)
+    axs = axs.flatten()
+
+    for T, ax in zip(transects, axs):
+        ax.set_title(T.name)
+        pcm = binned_plot(T.casts, ax)
+
+    cbar_ax = fig.add_axes([0.15, 0.03, 0.7, 0.02])
+    plt.colorbar(pcm, cax=cbar_ax, orientation="horizontal")
+    cbar_ax.set_xlabel("Chlorophyll (mg/m^3)")
+    #plt.colorbar(pcm, orientation="horizontal")
+
+    axs[0].set_ylabel("Depth (m)")
+    axs[5].set_ylabel("Depth (m)")
+    plt.savefig("Louis/outputs/output5.png", dpi=300)
+    plt.show()
+
+
+
+
+
+
+    # fig, axs = plt.subplots(3, 1)
+
+    # ax = axs[1]
+
+    # for i, df in enumerate(valid_casts):
+    #     ax.scatter(i/2, df["latitude"].iloc[0])
+    #     ax.set_xlim(0, len(valid_casts)/2)
+    #     ax.set_ylabel("Latitude")
+
+    # ax = axs[2]
+    # for i, df in enumerate(valid_casts):
+    #     ax.scatter(i/2, df["longitude"].iloc[0])
+    #     ax.set_xlim(0, len(valid_casts)/2)
+    #     ax.set_ylabel("Longitude")
+        
+
+    #binned_plot(valid_casts, ax=axs[0])
+
+if __name__ == "__main__":
+    run()
+
