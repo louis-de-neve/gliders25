@@ -27,3 +27,5 @@ Manually checked each transect to highlight [problematic up/down casts.](Louis/t
 removed problematic down/upcasts and fixed where signal processing had offset casts
 
 started working on a method to convert downcast numbers to distances/times
+
+(i then realised there is a field in the data called `profile index` that makes almost all my work to date redundant 😠)
