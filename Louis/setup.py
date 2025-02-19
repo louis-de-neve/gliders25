@@ -24,7 +24,8 @@ def import_data_from_mat_file(
 
     df = pd.DataFrame.from_dict(limited_dict)
     df["DateTime"] = pd.to_datetime(df["time"], unit='s')
-
+    df["original_index"] = df.index
+    print(df["scatter_650"])
     return df
 
 
@@ -39,8 +40,9 @@ class Profile:
         self.maximum_depth = cast_data["depth"].max()
         self.start_time = cast_data["DateTime"].iloc[0]
         self.start_location = [cast_data["longitude"].iloc[0], cast_data["latitude"].iloc[0]]
+        self.end_time = cast_data["DateTime"].iloc[-1]
         self.end_location = [cast_data["longitude"].iloc[-1], cast_data["latitude"].iloc[-1]]
-        self.profile_duration = cast_data["DateTime"].iloc[-1] - self.start_time
+        self.profile_duration = self.end_time - self.start_time
 
     def __repr__(self) -> str:
         return f"Profile {self.index} from transect {self.transect_index}"
@@ -146,9 +148,16 @@ def create_transects(valid_profiles:list[pd.DataFrame]) -> list[Transect]:
     return transect_list
 
 
-def import_split_and_make_transects(parameters:list[str]=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index"]
+def no_pre_processing(profiles:list[Profile]) -> list[Profile]:
+    return profiles
+
+
+def import_split_and_make_transects(parameters:list[str]=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index", "scatter_650"],
+                                    pre_processing_function=no_pre_processing
                                     ) -> tuple[list[Transect], list[Profile]]:
     df = import_data_from_mat_file(parameters=parameters)
     profiles = split_raw_data_into_profiles(df)
+    profiles = pre_processing_function(profiles)
+    
     transects = create_transects(profiles)
     return transects, profiles

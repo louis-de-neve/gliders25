@@ -46,8 +46,19 @@ shifted sections of setup code into [setup.py](setup.py)
 
 deprecated `transect_information.py`
 
+### 18th Feb
+
+rewrote the bbp correction code into python
+
 # TO DO
 
-commenting 
 write code to identify night/day
-take a look at dark correction and chlorophyll stuff
+
+despike the beta data and convert to bbp using new script
+
+depth correction for >300m - 95% and then convert -ve to zero
+
+take average of the night before and after as the new CtoB ratio
+
+cross correlation of the uncorrected vs corrected
+
