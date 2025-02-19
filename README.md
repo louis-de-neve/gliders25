@@ -50,11 +50,25 @@ deprecated `transect_information.py`
 
 rewrote the bbp correction code into python
 
+### 19th Feb
+
+wrote a peak filtering function for bbp data
+- 30 wide median
+- scipy lowpass (butter, Wn=0.1) filter
+- 40 wide median
+- 7 wide mean
+
+also created an alternative method that takes into account the local minima. (this could be a good thing to talk about in writeup!)
+
+rewrote MLD code to attach mixed layer depth info to a profile
+
+
 # TO DO
 
 write code to identify night/day
 
 despike the beta data and convert to bbp using new script
+
 
 depth correction for >300m - 95% and then convert -ve to zero
 
@@ -62,3 +76,6 @@ take average of the night before and after as the new CtoB ratio
 
 cross correlation of the uncorrected vs corrected
 
+# Q's
+
+bbp is also offset from zero in the deep, does this need to be offset too?

@@ -4,9 +4,9 @@ from plotting_functions import binned_plot, temp_salinity_plot, transect_map
 
 
 def run():
-    transects, all_valid_profiles = import_split_and_make_transects()
+    transects, all_valid_profiles = import_split_and_make_transects(parameters="all")
 
-
+    print("here")
 
 
     transect = transects[0]

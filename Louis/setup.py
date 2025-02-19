@@ -8,7 +8,7 @@ import matplotlib as mpl
 def import_data_from_mat_file(
         filename:str='Louis/data_631_allqc.mat',
         data_location = "DATA_PROC",
-        parameters:list[str]=["time", "longitude", "latitude", "depth", "chlorophyll", "profile_index"]
+        parameters:list[str]|str="all"
         ) -> pd.DataFrame:
     
 
@@ -20,12 +20,17 @@ def import_data_from_mat_file(
     for key in raw_data_keys:
         full_data_dictionary[key] = raw_data[key].flatten()
 
+    if parameters == "all":
+        parameters = raw_data_keys
+
     limited_dict = {key: full_data_dictionary[key] for key in parameters}
+
+    
 
     df = pd.DataFrame.from_dict(limited_dict)
     df["DateTime"] = pd.to_datetime(df["time"], unit='s')
     df["original_index"] = df.index
-    print(df["scatter_650"])
+
     return df
 
 
@@ -43,6 +48,7 @@ class Profile:
         self.end_time = cast_data["DateTime"].iloc[-1]
         self.end_location = [cast_data["longitude"].iloc[-1], cast_data["latitude"].iloc[-1]]
         self.profile_duration = self.end_time - self.start_time
+        self.MLD = np.nan
 
     def __repr__(self) -> str:
         return f"Profile {self.index} from transect {self.transect_index}"
@@ -68,6 +74,7 @@ class Profile:
         self.start_location = self.start_location if self.start_time <= other.start_time else other.start_location
         self.end_location = self.end_location if self.data["DateTime"].iloc[-1] >= other.data["DateTime"].iloc[-1] else other.end_location
         self.profile_duration = self.data["DateTime"].iloc[-1] - self.start_time
+        self.direction = "up" if self.data["depth"].iloc[0] < self.data["depth"].iloc[-1] else "down"
         return self
 
     
@@ -152,7 +159,7 @@ def no_pre_processing(profiles:list[Profile]) -> list[Profile]:
     return profiles
 
 
-def import_split_and_make_transects(parameters:list[str]=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index", "scatter_650"],
+def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index", "scatter_650"],
                                     pre_processing_function=no_pre_processing
                                     ) -> tuple[list[Transect], list[Profile]]:
     df = import_data_from_mat_file(parameters=parameters)

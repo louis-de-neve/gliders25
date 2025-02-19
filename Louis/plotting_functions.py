@@ -20,7 +20,11 @@ def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_si
     depth_bins = -np.arange(0, 1000, bin_size)
     time_bins = np.arange(data_array.shape[1])
     X, Y = np.meshgrid(time_bins, depth_bins)
-    pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm(vmin=0.03, vmax=30))
+    if parameter == "chlorophyll":
+        pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm(vmin=0.03, vmax=30))
+    else:
+        pcm = ax.pcolor(X, Y, data_array)
+    
     ax.set_xlabel("Downcast number")
     #ax.set_ylabel("Depth (m)")
     return pcm
