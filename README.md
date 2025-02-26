@@ -62,6 +62,16 @@ also created an alternative method that takes into account the local minima. (th
 
 rewrote MLD code to attach mixed layer depth info to a profile
 
+### 20/21st Feb
+
+implemented minimum based despiking for the bbp data using interpolated temp and salinity
+
+applied zeroing correction to deep chlorophyll
+
+### 26th Feb
+
+applied nearest night quenching correction to bbp data
+
 
 # TO DO
 

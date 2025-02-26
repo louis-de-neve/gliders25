@@ -49,6 +49,7 @@ class Profile:
         self.end_location = [cast_data["longitude"].iloc[-1], cast_data["latitude"].iloc[-1]]
         self.profile_duration = self.end_time - self.start_time
         self.MLD = np.nan
+        self.night = False
 
     def __repr__(self) -> str:
         return f"Profile {self.index} from transect {self.transect_index}"
@@ -160,11 +161,12 @@ def no_pre_processing(profiles:list[Profile]) -> list[Profile]:
 
 
 def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index", "scatter_650"],
-                                    pre_processing_function=no_pre_processing
+                                    pre_processing_function=no_pre_processing,
+                                    **kwargs
                                     ) -> tuple[list[Transect], list[Profile]]:
     df = import_data_from_mat_file(parameters=parameters)
     profiles = split_raw_data_into_profiles(df)
-    profiles = pre_processing_function(profiles)
+    profiles = pre_processing_function(profiles, **kwargs)
     
     transects = create_transects(profiles)
     return transects, profiles

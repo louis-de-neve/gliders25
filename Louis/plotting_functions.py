@@ -22,6 +22,8 @@ def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_si
     X, Y = np.meshgrid(time_bins, depth_bins)
     if parameter == "chlorophyll":
         pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm(vmin=0.03, vmax=30))
+    # elif parameter == "chlorophyll_corrected":
+    #         pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm())
     else:
         pcm = ax.pcolor(X, Y, data_array)
     
