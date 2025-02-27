@@ -128,7 +128,7 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
         profile.data["CtoB"] = C_to_B_ratio
 
         mixed_layer_df = profile.data[profile.data["depth"] < profile.mld]
-        mixed_layer_df = mixed_layer_df[mixed_layer_df["depth"] > 0.2]
+        mixed_layer_df = mixed_layer_df[mixed_layer_df["depth"] > 3]
 
         C_to_B_mixed_layer_max = mixed_layer_df["CtoB"].max()
         C_to_B_mixed_layer_mean = mixed_layer_df["CtoB"].mean()
@@ -143,7 +143,6 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
         profile.CtoB_ML_mean = C_to_B_mixed_layer_mean
         profile.CtoB_ML_max_depth = C_to_B_mixed_layer_max_depth
 
-
         profile.night = night[i]
         if profile.direction == "up":
             profile.surface_time = profile.end_time
@@ -151,7 +150,13 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
             profile.surface_time = profile.start_time
 
 
-        if profile.night and not np.isnan(C_to_B_mixed_layer_mean):
+        if profile.night and (not np.isnan(C_to_B_mixed_layer_mean) and profile.direction == "down"):
+
+            ml_df = mixed_layer_df.dropna(subset=f"bbp_{despiking_method}_despiked")
+            ml_df = ml_df.dropna(subset=f"chlorophyll")
+            regression = np.polyfit(ml_df[f"bbp_{despiking_method}_despiked"], ml_df["chlorophyll"], 1)
+            profile.CtoB_regression = regression[0]
+
             night_timings[profile.surface_time] = i
 
     for i, profile in enumerate(profiles):
@@ -162,16 +167,20 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
             night_CtoB_mean = profiles[nearest_night_index].CtoB_ML_mean         
 
             chlorophyll = profile.data["chlorophyll"]
-            bbp = profile.data[f"bbp_{despiking_method}_despiked"]
+
+            bbp = profile.data["bbp"]
             depth = profile.data["depth"]
 
             qf = night_CtoB_mean if quench_method == "night" else profile.CtoB_ML_max
-            profile.qf = (night_CtoB_mean, profile.CtoB_ML_max)
+            qf = profiles[nearest_night_index].CtoB_regression if quench_method == "regression" else qf
+            #print(qf)
 
             chlorophyll_corrected = []
             for i in range(depth.first_valid_index(), depth.last_valid_index()+1):
                 if depth[i] < profile.CtoB_ML_max_depth:
-                    chlorophyll_corrected.append(bbp[i] * qf)
+                    new_c = bbp[i] * float(qf)
+                    new_c = new_c if new_c > chlorophyll[i] else chlorophyll[i]
+                    chlorophyll_corrected.append(new_c)
                 else:
                     chlorophyll_corrected.append(chlorophyll[i])
             
@@ -207,8 +216,10 @@ if __name__ == "__main__":
                 "profile_index", "scatter_650"]
 
 
-    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_preprocessing, parameters=parameters)
-
+    transects, all_valid_profiles = import_split_and_make_transects(parameters="all",
+                                                                    pre_processing_function=scatter_and_chlorophyll_preprocessing,
+                                                                    despiking_method="minimum",
+                                                                    quench_method="regression")
     # mlds = [profile.mld for profile in all_valid_profiles]
     # indexes = [profile.index for profile in all_valid_profiles]
 

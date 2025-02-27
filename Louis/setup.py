@@ -78,7 +78,11 @@ class Profile:
         self.direction = "up" if self.data["depth"].iloc[0] < self.data["depth"].iloc[-1] else "down"
         return self
 
-    
+def concatenate_profiles(profiles:list[Profile]) -> pd.DataFrame:
+    p0 = profiles[0]
+    for profile in profiles[1:]:
+        p0.merge(profile)
+    return p0.data  
 
 
 def split_raw_data_into_profiles(df:pd.DataFrame, include_non_integer_profiles:bool=True) -> list[Profile]:
