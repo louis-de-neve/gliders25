@@ -98,7 +98,7 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
         df = df[df["depth"] < 200]
 
         if len(df) == 0:
-            profile.mld = 0
+            profile.mld = 1
         else:
             mld_index = int(df.iloc[0]["original_index"])
             mld_depth = profile.data[profile.data["original_index"] == mld_index]["depth"].iloc[0]
@@ -115,7 +115,7 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
     return profiles
 
 
-def quenching_correction(profiles:list[Profile], despiking_method:str="minimum", quench_method:str="night") -> list[Profile]:
+def quenching_correction(profiles:list[Profile], despiking_method:str="minimum") -> list[Profile]:
     print("Applying quenching correction...")
     with open("Louis/day_night1.txt", "r") as f:
         night = f.readlines()
@@ -130,18 +130,8 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
         mixed_layer_df = profile.data[profile.data["depth"] < profile.mld]
         mixed_layer_df = mixed_layer_df[mixed_layer_df["depth"] > 3]
 
-        C_to_B_mixed_layer_max = mixed_layer_df["CtoB"].max()
         C_to_B_mixed_layer_mean = mixed_layer_df["CtoB"].mean()
-        
-        max_slice = mixed_layer_df[mixed_layer_df["CtoB"] == C_to_B_mixed_layer_max]
-        if max_slice.empty == True:
-            C_to_B_mixed_layer_max_depth = 0
-        else:
-            C_to_B_mixed_layer_max_depth = max_slice["depth"].iloc[0]
-
-        profile.CtoB_ML_max = C_to_B_mixed_layer_max
         profile.CtoB_ML_mean = C_to_B_mixed_layer_mean
-        profile.CtoB_ML_max_depth = C_to_B_mixed_layer_max_depth
 
         profile.night = night[i]
         if profile.direction == "up":
@@ -151,12 +141,6 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
 
 
         if profile.night and (not np.isnan(C_to_B_mixed_layer_mean) and profile.direction == "down"):
-
-            ml_df = mixed_layer_df.dropna(subset=f"bbp_{despiking_method}_despiked")
-            ml_df = ml_df.dropna(subset=f"chlorophyll")
-            regression = np.polyfit(ml_df[f"bbp_{despiking_method}_despiked"], ml_df["chlorophyll"], 1)
-            profile.CtoB_regression = regression[0]
-
             night_timings[profile.surface_time] = i
 
     for i, profile in enumerate(profiles):
@@ -167,29 +151,22 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
             night_CtoB_mean = profiles[nearest_night_index].CtoB_ML_mean         
 
             chlorophyll = profile.data["chlorophyll"]
-
             bbp = profile.data["bbp"]
             depth = profile.data["depth"]
 
-            qf = night_CtoB_mean if quench_method == "night" else profile.CtoB_ML_max
-            qf = profiles[nearest_night_index].CtoB_regression if quench_method == "regression" else qf
-            #print(qf)
-
             chlorophyll_corrected = []
             for j in range(depth.first_valid_index(), depth.last_valid_index()+1):
-                if depth[j] < profile.CtoB_ML_max_depth:
-                    new_c = bbp[j] * float(qf)
+                if depth[j] < profile.mld:
+                    new_c = bbp[j] * night_CtoB_mean
                     #new_c = new_c if new_c > chlorophyll[j] else chlorophyll[j]
                     chlorophyll_corrected.append(new_c)
                 else:
                     chlorophyll_corrected.append(chlorophyll[j])
             
             profile.data["chlorophyll_corrected"] = chlorophyll_corrected
-            profile.night_CtoB_mean = night_CtoB_mean
         else:
             profile.data["chlorophyll_corrected"] = profile.data["chlorophyll"]
-            profile.night_CtoB_mean = None
-            profile.qf = None
+
 
             
 
@@ -197,11 +174,11 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
 
 
 
-def scatter_and_chlorophyll_preprocessing(profiles:list[Profile], despiking_method:str="minimum", quench_method:str="night") -> list[Profile]:
+def scatter_and_chlorophyll_preprocessing(profiles:list[Profile], despiking_method:str="minimum") -> list[Profile]:
     profiles = scatter_conversion_and_despiking(profiles)
     profiles = deep_chlorophyll_correction(profiles)
     profiles = MLD_calculation(profiles)
-    profiles = quenching_correction(profiles, despiking_method, quench_method)
+    profiles = quenching_correction(profiles, despiking_method)
     #despiking is "minimum" or "mean"
     #quenching is "night" or "mean"
     return profiles
@@ -219,7 +196,7 @@ if __name__ == "__main__":
     transects, all_valid_profiles = import_split_and_make_transects(parameters="all",
                                                                     pre_processing_function=scatter_and_chlorophyll_preprocessing,
                                                                     despiking_method="minimum",
-                                                                    quench_method="regression")
+                                                                    quench_method="night")
     # mlds = [profile.mld for profile in all_valid_profiles]
     # indexes = [profile.index for profile in all_valid_profiles]
 

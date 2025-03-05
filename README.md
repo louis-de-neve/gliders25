@@ -72,19 +72,38 @@ applied zeroing correction to deep chlorophyll
 
 applied nearest night quenching correction to bbp data
 
+### 27th Feb
+
+identified nights/days
+despiked beta data
+
+### 28th Feb
+
+used new beta despiking method
+
+chlorophyll deep correction
+
+applied cross correlation
+
+### 1-4th March
+
+Realised cross correlation was poor. Found jumps due to over correcting of the CtoB data. Discussed how to potentially fix (adjusting the entire MLD rather than just the top layer)
+
+### 5th March
+
+created `new_corrections.py` that just uses night correlation and goes over the entire MLD
+
 
 # TO DO
 
-write code to identify night/day
+adjust across entire MLD instead of the max depth
 
-despike the beta data and convert to bbp using new script
+take a look at other datasets which have discrepancies between up and down casts
 
+transects over top 100m
 
-depth correction for >300m - 95% and then convert -ve to zero
+Integrated chlorphyll
 
-take average of the night before and after as the new CtoB ratio
-
-cross correlation of the uncorrected vs corrected
 
 # Q's
 
