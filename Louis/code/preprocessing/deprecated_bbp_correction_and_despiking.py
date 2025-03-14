@@ -1,8 +1,8 @@
-from setup import import_split_and_make_transects, Profile, Transect
+from setup.setup import import_split_and_make_transects, Profile, Transect
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from betasw_zhh09 import betasw_ZHH2009
+from preprocessing.betasw_zhh09 import betasw_ZHH2009
 import scipy as sp
 from plotting_functions import binned_plot
 from gsw import SA_from_SP, CT_from_t, sigma0
@@ -117,7 +117,7 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
 
 def quenching_correction(profiles:list[Profile], despiking_method:str="minimum", quench_method:str="night") -> list[Profile]:
     print("Applying quenching correction...")
-    with open("Louis/day_night1.txt", "r") as f:
+    with open("Louis/data/day_night1.txt", "r") as f:
         night = f.readlines()
         night = [True if i.rstrip("\n") == "1" else False for i in night]
         
@@ -179,7 +179,7 @@ def quenching_correction(profiles:list[Profile], despiking_method:str="minimum",
             for j in range(depth.first_valid_index(), depth.last_valid_index()+1):
                 if depth[j] < profile.CtoB_ML_max_depth:
                     new_c = bbp[j] * float(qf)
-                    #new_c = new_c if new_c > chlorophyll[j] else chlorophyll[j]
+                    new_c = new_c if new_c > chlorophyll[j] else chlorophyll[j]
                     chlorophyll_corrected.append(new_c)
                 else:
                     chlorophyll_corrected.append(chlorophyll[j])

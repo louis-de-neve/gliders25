@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 def import_data_from_mat_file(
-        filename:str='Louis/data_631_allqc.mat',
+        filename:str='Louis/data/data_631_allqc.mat',
         data_location = "DATA_PROC",
         parameters:list[str]|str="all"
         ) -> pd.DataFrame:
     
-
     mat = scipy.io.loadmat(filename)
+    
     raw_data = mat[data_location][0, 0]
     raw_data_keys = raw_data.dtype.names
     full_data_dictionary = {}
@@ -23,14 +23,15 @@ def import_data_from_mat_file(
     if parameters == "all":
         parameters = raw_data_keys
 
+    
     limited_dict = {key: full_data_dictionary[key] for key in parameters}
-
     
 
     df = pd.DataFrame.from_dict(limited_dict)
     df["DateTime"] = pd.to_datetime(df["time"], unit='s')
     df["original_index"] = df.index
-
+    
+    
     return df
 
 
@@ -54,12 +55,15 @@ class Profile:
     def __repr__(self) -> str:
         return f"Profile {self.index} from transect {self.transect_index}"
         
-    def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0) -> pd.DataFrame:
-        bins = np.arange(0, 1000, bin_size)
-        binned_data = self.data.groupby(pd.cut(self.data["depth"], bins), observed=False)[parameter].mean().reset_index()
+    def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0, max_depth:float=1000.) -> list[float]:
+        bins = np.arange(bin_size/2, max_depth, bin_size)
+        d = self.data
+        d = d[d["depth"] < max_depth]
+        d = d[d["depth"] >= bin_size/2]
+        binned_data = d.groupby(pd.cut(d["depth"], bins), observed=False)[parameter].mean().reset_index()
         binned_data.columns = ["depth_bin", f"binned_{parameter}"]
         binned_data = list(binned_data[f"binned_{parameter}"])
-        binned_data += [np.nan] * int(1000/bin_size - len(binned_data))
+        binned_data += [np.nan] * int( max_depth/bin_size - len(binned_data))
         return binned_data
     
     def allocate_profile_to_transect(self, transect_index:int) -> None:
@@ -75,7 +79,7 @@ class Profile:
         self.start_location = self.start_location if self.start_time <= other.start_time else other.start_location
         self.end_location = self.end_location if self.data["DateTime"].iloc[-1] >= other.data["DateTime"].iloc[-1] else other.end_location
         self.profile_duration = self.data["DateTime"].iloc[-1] - self.start_time
-        self.direction = "up" if self.data["depth"].iloc[0] < self.data["depth"].iloc[-1] else "down"
+        self.direction = "up" if self.data["depth"].iloc[0] > self.data["depth"].iloc[-1] else "down" # depth is positive
         return self
 
 def concatenate_profiles(profiles:list[Profile]) -> pd.DataFrame:
@@ -108,10 +112,10 @@ def split_raw_data_into_profiles(df:pd.DataFrame, include_non_integer_profiles:b
     return integer_profiles
 
 
-def two_dimensional_binning(valid_profiles:list[Profile], parameter:str, bin_size:float=0.5) -> np.ndarray:
+def two_dimensional_binning(valid_profiles:list[Profile], parameter:str, bin_size:float=0.5, max_depth:float=1000.) -> np.ndarray:
     data_array = []
     for profile in valid_profiles:
-        binned_data = profile.apply_binning_to_parameter(parameter, bin_size)
+        binned_data = profile.apply_binning_to_parameter(parameter, bin_size, max_depth)
         data_array.append(binned_data)
     data_array = np.asarray(data_array)
     return data_array.T
@@ -130,7 +134,7 @@ class Transect:
         return self.profiles
 
 
-def create_transects(valid_profiles:list[pd.DataFrame]) -> list[Transect]:
+def create_transects(valid_profiles:list[pd.DataFrame], use_upcasts:bool=False) -> list[Transect]:
     TRANSECT_INDICES = {
     "A": (1, 89),
     "B": (90, 225),
@@ -153,6 +157,13 @@ def create_transects(valid_profiles:list[pd.DataFrame]) -> list[Transect]:
         for profile in transect_profiles:
             profile.allocate_profile_to_transect(transect_name)
 
+        if not use_upcasts:
+            downcasts = []
+            for p in transect_profiles:
+                if p.direction == "up":
+                    downcasts.append(p)
+            transect_profiles=downcasts
+
         transect_list.append(Transect(transect_name, transect_profiles))
     
     print(f"Created {len(transect_list)} transects")
@@ -163,14 +174,39 @@ def create_transects(valid_profiles:list[pd.DataFrame]) -> list[Transect]:
 def no_pre_processing(profiles:list[Profile]) -> list[Profile]:
     return profiles
 
+def no_quenching_correction(profiles:list[Profile]) -> list[Profile]:
+    return profiles
 
-def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude", "depth", "chlorophyll", "temperature_final", "salinity_final", "profile_index", "scatter_650"],
+def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude",
+                                                               "depth", "chlorophyll", "pressure",
+                                                               "temperature_final", "salinity_final",
+                                                               "temperature", "salinity", "temperature_corrected_thermal",
+                                                               "profile_index", "scatter_650"],
                                     pre_processing_function=no_pre_processing,
+                                    use_cache:bool=True,
+                                    quenching_method=no_quenching_correction,
+                                    use_downcasts:bool=False,
                                     **kwargs
                                     ) -> tuple[list[Transect], list[Profile]]:
-    df = import_data_from_mat_file(parameters=parameters)
-    profiles = split_raw_data_into_profiles(df)
-    profiles = pre_processing_function(profiles, **kwargs)
     
-    transects = create_transects(profiles)
+    if not use_cache:
+        df = import_data_from_mat_file(parameters=parameters)
+        profiles = split_raw_data_into_profiles(df)
+    else:
+        profiles = []
+    profiles = pre_processing_function(profiles, quenching_method, use_cache, **kwargs)
+
+    
+
+    transects = create_transects(profiles, use_downcasts)
+
+    if not use_downcasts:
+        downcasts = []
+        for p in profiles:
+            if p.direction == "up":
+                downcasts.append(p)
+        profiles=downcasts
+    
+        
     return transects, profiles
+

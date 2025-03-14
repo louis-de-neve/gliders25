@@ -93,16 +93,36 @@ Realised cross correlation was poor. Found jumps due to over correcting of the C
 
 created `new_corrections.py` that just uses night correlation and goes over the entire MLD
 
+created more plots in chlorophyll_regression comparing old and new corrections
+
+### 6th March
+
+refactored code base into folders
+
+### 7th and 8th March
+
+compared different preprocessing against the night profiles
+plotted a map plot of the chlorophyll
+
+### 12th March
+
+decided to write a paper: 
+analysis of photochemical quencing corrections in antarctic chlorophyll data
+
+rewrote preprocessing function handling to allow for pre-processing caching and handling different quenching method functions
 
 # TO DO
 
-adjust across entire MLD instead of the max depth
+take a look at par profiles
 
-take a look at other datasets which have discrepancies between up and down casts
+up and down casts
 
-transects over top 100m
+record the plots in pptx
 
-Integrated chlorphyll
+correct that bubble stuff
+
+make some clear transects
+
 
 
 # Q's

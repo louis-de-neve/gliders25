@@ -1,11 +1,12 @@
-from setup import import_split_and_make_transects, Profile, Transect
+from setup.setup import import_split_and_make_transects, Profile, Transect
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from betasw_zhh09 import betasw_ZHH2009
+from preprocessing.betasw_zhh09 import betasw_ZHH2009
 import scipy as sp
 from plotting_functions import binned_plot
 from gsw import SA_from_SP, CT_from_t, sigma0
+import os
 
 
 def beta_to_bbp(beta, temp, salinity):
@@ -115,72 +116,34 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
     return profiles
 
 
-def quenching_correction(profiles:list[Profile], despiking_method:str="minimum") -> list[Profile]:
-    print("Applying quenching correction...")
-    with open("Louis/day_night1.txt", "r") as f:
-        night = f.readlines()
-        night = [True if i.rstrip("\n") == "1" else False for i in night]
-        
-    night_timings = {}
 
-    for i, profile in enumerate(profiles):
-        C_to_B_ratio = profile.data["chlorophyll"] / profile.data[f"bbp_{despiking_method}_despiked"]
-        profile.data["CtoB"] = C_to_B_ratio
-
-        mixed_layer_df = profile.data[profile.data["depth"] < profile.mld]
-        mixed_layer_df = mixed_layer_df[mixed_layer_df["depth"] > 3]
-
-        C_to_B_mixed_layer_mean = mixed_layer_df["CtoB"].mean()
-        profile.CtoB_ML_mean = C_to_B_mixed_layer_mean
-
-        profile.night = night[i]
-        if profile.direction == "up":
-            profile.surface_time = profile.end_time
-        else:
-            profile.surface_time = profile.start_time
-
-
-        if profile.night and (not np.isnan(C_to_B_mixed_layer_mean) and profile.direction == "down"):
-            night_timings[profile.surface_time] = i
-
-    for i, profile in enumerate(profiles):
-        if not profile.night:
-
-            nearest_night_surface_time = min(night_timings.keys(), key=lambda x: abs(x - profile.surface_time))
-            nearest_night_index = night_timings[nearest_night_surface_time]
-            night_CtoB_mean = profiles[nearest_night_index].CtoB_ML_mean         
-
-            chlorophyll = profile.data["chlorophyll"]
-            bbp = profile.data["bbp"]
-            depth = profile.data["depth"]
-
-            chlorophyll_corrected = []
-            for j in range(depth.first_valid_index(), depth.last_valid_index()+1):
-                if depth[j] < profile.mld:
-                    new_c = bbp[j] * night_CtoB_mean
-                    #new_c = new_c if new_c > chlorophyll[j] else chlorophyll[j]
-                    chlorophyll_corrected.append(new_c)
-                else:
-                    chlorophyll_corrected.append(chlorophyll[j])
-            
-            profile.data["chlorophyll_corrected"] = chlorophyll_corrected
-        else:
-            profile.data["chlorophyll_corrected"] = profile.data["chlorophyll"]
-
-
-            
-
-    return profiles
-
-
-
-def scatter_and_chlorophyll_preprocessing(profiles:list[Profile], despiking_method:str="minimum") -> list[Profile]:
+def preprocessing_function(profiles:list[Profile]) -> list[Profile]:
     profiles = scatter_conversion_and_despiking(profiles)
     profiles = deep_chlorophyll_correction(profiles)
     profiles = MLD_calculation(profiles)
-    profiles = quenching_correction(profiles, despiking_method)
+    return profiles
+
+
+def scatter_and_chlorophyll_processing(profiles:list[Profile], quench_method, use_cache:bool=True, **kwargs) -> list[Profile]:
+
+
+    if use_cache and os.path.exists("Louis/cache/unprocessed.pkl"):
+        with open("Louis/cache/unprocessed.pkl", "rb") as f:
+            data = pd.read_pickle(f)
+        profiles = data["profiles"]
+
+    elif use_cache:
+        print("No cache found...")
+        exit()
+
+    else:
+        profiles = preprocessing_function(profiles)
+        with open("Louis/cache/unprocessed.pkl", "wb") as f:
+            pd.to_pickle({"profiles": profiles, "null": None}, f)
+        
+
+    profiles = quench_method(profiles, **kwargs)
     #despiking is "minimum" or "mean"
-    #quenching is "night" or "mean"
     return profiles
 
 
@@ -194,7 +157,7 @@ if __name__ == "__main__":
 
 
     transects, all_valid_profiles = import_split_and_make_transects(parameters="all",
-                                                                    pre_processing_function=scatter_and_chlorophyll_preprocessing,
+                                                                    pre_processing_function=scatter_and_chlorophyll_processing,
                                                                     despiking_method="minimum",
                                                                     quench_method="night")
     # mlds = [profile.mld for profile in all_valid_profiles]
