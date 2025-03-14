@@ -1,4 +1,7 @@
 Holly\ Nixon\ -\ BAS\ -\ Chla\ Correcting/
 Louis/cache/
 Louis/data/data_631_allqc.mat
-**/__pycache__/**
+Louis/__pycache__/
+Louis/code/__pycache__
+Louis/code/preprocessing/__pycache__
+Louis/code/setup/__pycache__
