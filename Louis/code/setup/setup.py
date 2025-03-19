@@ -1,7 +1,7 @@
 import scipy.io
 import numpy as np
 import pandas as pd
-
+import os
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
@@ -191,9 +191,18 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                                     use_cache:bool=True,
                                     quenching_method=no_quenching_correction,
                                     use_downcasts:bool=False,
+                                    use_supercache:bool=False,
                                     **kwargs
                                     ) -> tuple[list[Transect], list[Profile]]:
     
+    if use_supercache and os.path.exists("Louis/cache/supercache.pkl"):
+        with open("Louis/cache/supercache.pkl", "rb") as f:
+            data = pd.read_pickle(f)
+        transects = data["transects"]
+        profiles = data["profiles"]
+        return transects, profiles
+
+
     if not use_cache:
         df = import_data_from_mat_file(parameters=parameters)
         profiles = split_raw_data_into_profiles(df)
@@ -212,6 +221,11 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                 downcasts.append(p)
         profiles=downcasts
     
+    print("caching data...")
+    with open("Louis/cache/supercache.pkl", "wb") as f:
+        pd.to_pickle({"profiles": profiles, "transects": transects}, f)
+
+
         
     return transects, profiles
 
