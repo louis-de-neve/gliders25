@@ -117,29 +117,22 @@ added photic depth calculations
 
 fixed mixed layer depths
 
+### 19th March
+
+made repo public
+
+
 
 # TO DO
 
-take a look at par profiles
 
 up and down casts
 
-record the plots in pptx
-
 correct that bubble stuff
 
-make some clear transects
+make some clear transects (of chlorophyll)
 
 
 
 # Q's
 
-bbp is also offset from zero in the deep, does this need to be offset too?
-
-there are random scatter 650 at 0.0065 - why? upper limit?
-
-there is actually little correlation between night scatter 650 and chlorophyll in mld - is there a better way to correct?
-
-down and up casts seem to exhibit different responses?
-
-cancelling out the low C gives better results but shouldnt be? looks like sometimes bbp is abnormally low
