@@ -2,9 +2,12 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects, Profile, Transect
+from setup.setup import import_split_and_make_transects, Profile, Transect, two_dimensional_binning
 from preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
 from preprocessing.quenching.default import default_quenching_correction
+import seaborn as sns
+from scipy.optimize import curve_fit
+import warnings
 
 
 
@@ -14,23 +17,10 @@ transects, all_valid_profiles = import_split_and_make_transects(pre_processing_f
                                                                 use_downcasts=True,
                                                                 despiking_method="minimum")
 
-
-# profiles = []
-# for p in transects[0].get_profiles():
-#         #if p.direction == "up":
-#     profiles.append(p)
-profiles = all_valid_profiles
-
-for profile in profiles:
-    plt.plot(-profile.data["depth"])
-    plt.show()
+plt.plot([p.photic_depth for p in all_valid_profiles])
+plt.show()
 
 
-
-night_timings = {}
-for i, profile in enumerate(profiles):
-    if profile.night and (not np.isnan(profile.CtoB_ML_mean) and profile.direction == "up"):
-        night_timings[profile.surface_time] = i
 
 
 
@@ -62,7 +52,15 @@ for i, profile in enumerate(profiles):
 
     
 
+exit()
+pass
+# NORMALISED EXPERIMENTS
 
+profiles = all_valid_profiles
+night_timings = {}
+for i, profile in enumerate(profiles):
+    if profile.night and (not np.isnan(profile.CtoB_ML_mean) and profile.direction == "up"):
+        night_timings[profile.surface_time] = i
 
 for profile in profiles:
     nearest_night_surface_time = min(night_timings.keys(), key=lambda x: abs(x - profile.surface_time))

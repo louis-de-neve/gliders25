@@ -138,13 +138,14 @@ def dump():
     transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=preprocessing, quenching_method=default_quenching_correction, use_cache=True,
                                                                     despiking_method="minimum")
     
-    fig, axs = plt.subplots(3, 4)
-    axs = axs.flatten()
+    fig, axs = plt.subplots(1,1)
+    axs = [axs]
+    #axs = axs.flatten()
 
 
     for profile in all_valid_profiles:
         profile.data["MLD_normalised_depth"] = profile.data["depth"] / profile.mld 
-    i = -1
+
     night_profiles = []
     day_profiles = []
     for p in all_valid_profiles:
@@ -176,76 +177,73 @@ def dump():
     slope, intercept, r1_value, p_value, std_err = linregress(day_mean_values, night_mean_values)
     slope, intercept, r2_value, p_value, std_err = linregress(day_corrected_mean_values, night_mean_values)
 
-    if i == 0:
-        sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll", label="day, raw")
-        sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="day, new")
-        sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="night")
-    else:
-        sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll")
-        sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
-        sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
 
-    axs[i].set_xlabel("")
-    axs[i].set_ylabel("")        
-    axs[i].text(s=f"R²s: {r1_value**2:.2f}, {r2_value**2:.2f}", x=0.5, y=0.25)
+    sns.lineplot(data=day_df, ax=axs[0], x="depth", y="chlorophyll", label="day, raw")
+    sns.lineplot(data=day_df, ax=axs[0], x="depth", y="chlorophyll_corrected", label="day, new")
+    sns.lineplot(data=night_df, ax=axs[0], x="depth", y="chlorophyll_corrected", label="night")
+
+
+    axs[0].set_xlabel("")
+    axs[0].set_ylabel("")        
+    axs[0].text(s=f"R²s: {r1_value**2:.2f}, {r2_value**2:.2f}", x=0.5, y=0.25)
     print(r2_value**2)
-    axs[i].text(0.95, 0.95, f'overall', transform=axs[i].transAxes, ha='right', va='top', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+    axs[0].text(0.95, 0.95, f'overall', transform=axs[0].transAxes, ha='right', va='top', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
     #plt.title(f"day/night :{r1_value**2:.2f}, daycorrected/night: {r2_value**2:.2f}")
 
 
 
 
-    for i, transect in enumerate(transects):
-        all_valid_profiles = transect.get_profiles()
+    # for i, transect in enumerate(transects):
+    #     all_valid_profiles = transect.get_profiles()
 
-        for profile in all_valid_profiles:
-            profile.data["MLD_normalised_depth"] = profile.data["depth"] / profile.mld 
+    #     for profile in all_valid_profiles:
+    #         profile.data["MLD_normalised_depth"] = profile.data["depth"] / profile.mld 
 
-        night_profiles = []
-        day_profiles = []
-        for p in all_valid_profiles:
-            if not p.night:
-                day_profiles.append(p.data)
-            else:
-                night_profiles.append(p.data)
+    #     night_profiles = []
+    #     day_profiles = []
+    #     for p in all_valid_profiles:
+    #         if not p.night:
+    #             day_profiles.append(p.data)
+    #         else:
+    #             night_profiles.append(p.data)
 
-        day_df = pd.concat(day_profiles)
-        night_df = pd.concat(night_profiles)
+    #     day_df = pd.concat(day_profiles)
+    #     night_df = pd.concat(night_profiles)
 
-        day_df = day_df[day_df["MLD_normalised_depth"] < 2]
-        day_df = day_df[day_df["depth"] > 3]
-        day_df = day_df[day_df["depth"] < 100]
-        day_df["MLD_normalised_depth"] = day_df["MLD_normalised_depth"].round(2)
-        day_df["depth"] = day_df["depth"].round(0)
+    #     day_df = day_df[day_df["MLD_normalised_depth"] < 2]
+    #     day_df = day_df[day_df["depth"] > 3]
+    #     day_df = day_df[day_df["depth"] < 100]
+    #     day_df["MLD_normalised_depth"] = day_df["MLD_normalised_depth"].round(2)
+    #     day_df["depth"] = day_df["depth"].round(0)
 
-        night_df = night_df[night_df["MLD_normalised_depth"] < 2]
-        night_df = night_df[night_df["depth"] > 3]
-        night_df = night_df[night_df["depth"] < 100]
-        night_df["MLD_normalised_depth"] = night_df["MLD_normalised_depth"].round(2)
-        night_df["depth"] = night_df["depth"].round(0)
+    #     night_df = night_df[night_df["MLD_normalised_depth"] < 2]
+    #     night_df = night_df[night_df["depth"] > 3]
+    #     night_df = night_df[night_df["depth"] < 100]
+    #     night_df["MLD_normalised_depth"] = night_df["MLD_normalised_depth"].round(2)
+    #     night_df["depth"] = night_df["depth"].round(0)
         
-        day_mean_values = day_df.groupby("depth")["chlorophyll"].mean().values
-        night_mean_values = night_df.groupby("depth")["chlorophyll"].mean().values
-        day_corrected_mean_values = day_df.groupby("depth")["chlorophyll_corrected"].mean().values
-        depths = day_df.groupby("depth")["depth"].mean().values
+    #     day_mean_values = day_df.groupby("depth")["chlorophyll"].mean().values
+    #     night_mean_values = night_df.groupby("depth")["chlorophyll"].mean().values
+    #     day_corrected_mean_values = day_df.groupby("depth")["chlorophyll_corrected"].mean().values
+    #     depths = day_df.groupby("depth")["depth"].mean().values
 
-        slope, intercept, r1_value, p_value, std_err = linregress(day_mean_values, night_mean_values)
-        slope, intercept, r2_value, p_value, std_err = linregress(day_corrected_mean_values, night_mean_values)
+    #     slope, intercept, r1_value, p_value, std_err = linregress(day_mean_values, night_mean_values)
+    #     slope, intercept, r2_value, p_value, std_err = linregress(day_corrected_mean_values, night_mean_values)
 
-        if i == 0:
-            sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll", label="day, raw")
-            sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="day, new")
-            sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="night")
-        else:
-            sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll")
-            sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
-            sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
+    #     if i == 0:
+    #         sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll", label="day, raw")
+    #         sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="day, new")
+    #         sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected", label="night")
+    #     else:
+    #         sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll")
+    #         sns.lineplot(data=day_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
+    #         sns.lineplot(data=night_df, ax=axs[i], x="depth", y="chlorophyll_corrected")
 
-        axs[i].set_xlabel("")
-        axs[i].set_ylabel("")        
-        axs[i].text(s=f"R²s: {r1_value**2:.2f}, {r2_value**2:.2f}", x=0.5, y=0.25)
-        print(r2_value)
-        axs[i].text(0.95, 0.95, f'Transect {i+1}', transform=axs[i].transAxes, ha='right', va='top', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+    #     axs[i].set_xlabel("")
+    #     axs[i].set_ylabel("")        
+    #     axs[i].text(s=f"R²s: {r1_value**2:.2f}, {r2_value**2:.2f}", x=0.5, y=0.25)
+    #     print(r2_value)
+    #     axs[i].text(0.95, 0.95, f'Transect {i+1}', transform=axs[i].transAxes, ha='right', va='top', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
     #plt.title(f"day/night :{r1_value**2:.2f}, daycorrected/night: {r2_value**2:.2f}")
 
     axs[0].legend()
@@ -312,7 +310,9 @@ def correlate():
     
     
     main_df = pd.concat([profile.data for profile in transects[0].get_profiles()])
-    main_df = main_df[main_df["depth"] > 10]
+    main_df = main_df[main_df["depth"] > 5]
+
+
 
     sns.scatterplot(data=main_df, x="chlorophyll_corrected", y="chlorophyll", color="#FFFFFF00", edgecolor="black", marker="o")
     plt.title("excluding top 10m")
@@ -340,3 +340,4 @@ def transect_plot():
 if __name__ == "__main__":
     #transect_plot()
     dump()
+    #correlate()

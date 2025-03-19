@@ -8,7 +8,8 @@ import matplotlib as mpl
 def import_data_from_mat_file(
         filename:str='Louis/data/data_631_allqc.mat',
         data_location = "DATA_PROC",
-        parameters:list[str]|str="all"
+        parameters:list[str]|str="all",
+        print_keys:bool=False,
         ) -> pd.DataFrame:
     
     mat = scipy.io.loadmat(filename)
@@ -22,6 +23,10 @@ def import_data_from_mat_file(
 
     if parameters == "all":
         parameters = raw_data_keys
+
+    if print_keys:
+        print(f"Keys: {raw_data_keys}")
+        return()
 
     
     limited_dict = {key: full_data_dictionary[key] for key in parameters}
@@ -171,17 +176,17 @@ def create_transects(valid_profiles:list[pd.DataFrame], use_upcasts:bool=False) 
     return transect_list
 
 
-def no_pre_processing(profiles:list[Profile]) -> list[Profile]:
+def no_pre_processing(profiles:list[Profile], a, b, **kwargs) -> list[Profile]:
     return profiles
 
-def no_quenching_correction(profiles:list[Profile]) -> list[Profile]:
+def no_quenching_correction(profiles:list[Profile], **kwargs) -> list[Profile]:
     return profiles
 
 def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude",
                                                                "depth", "chlorophyll", "pressure",
                                                                "temperature_final", "salinity_final",
                                                                "temperature", "salinity", "temperature_corrected_thermal",
-                                                               "profile_index", "scatter_650"],
+                                                               "profile_index", "scatter_650", "PAR"],
                                     pre_processing_function=no_pre_processing,
                                     use_cache:bool=True,
                                     quenching_method=no_quenching_correction,
@@ -210,3 +215,5 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
         
     return transects, profiles
 
+if __name__ == "__main__":
+    import_data_from_mat_file(print_keys=True)

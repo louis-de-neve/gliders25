@@ -89,12 +89,15 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
              
         absolute_density = sigma0(corrected_salinity, corrected_temperature)
         
-        profile.data["density_anomaly"] = absolute_density
+        profile.data["density"] = absolute_density
+
+        
 
         df = profile.data
         df = df.sort_values("depth")
-        surface_density = df.iloc[0]["density_anomaly"]
-        df["density_anomaly"] = absolute_density - surface_density
+        temp_df = df.dropna(subset=["density"])
+        surface_density = temp_df.iloc[0]["density"] if len(temp_df) > 0 else 0
+        df["density_anomaly"] = df["density"] - surface_density 
         df = df[df["density_anomaly"] > 0.03]
         df = df[df["depth"] < 200]
 
@@ -116,11 +119,27 @@ def MLD_calculation(profiles:list[Profile]) -> list[Profile]:
     return profiles
 
 
+def photic_calc(profiles:list[Profile]) -> list[Profile]:
+    for p in profiles:
+        df = p.data#[p.data["depth"] > 0.5]
+        par_max = df["PAR"].max()
+        df = df.sort_values("depth")
+        df = df.dropna(subset=["PAR"])
+        df = df[df["PAR"] < 0.01*par_max]
+        photic_depth = df["depth"].iloc[0] if len(df) > 3 else np.nan
+        p.photic_depth = photic_depth
+    photic_depths = np.asarray([p.photic_depth if (p.photic_depth < 200 and p.photic_depth > 10) else np.nan for p in profiles ])
+    photic_depths = pd.Series(photic_depths).interpolate(method='linear', limit_direction='both').to_numpy()
+    for i, p in enumerate(profiles):
+        p.photic_depth = photic_depths[i]       
+    return profiles
+
 
 def preprocessing_function(profiles:list[Profile]) -> list[Profile]:
     profiles = scatter_conversion_and_despiking(profiles)
     profiles = deep_chlorophyll_correction(profiles)
     profiles = MLD_calculation(profiles)
+    profiles = photic_calc(profiles)
     return profiles
 
 
@@ -148,7 +167,7 @@ def scatter_and_chlorophyll_processing(profiles:list[Profile], quench_method, us
 
 
 if __name__ == "__main__":
-
+    from quenching.default import default_quenching_correction
     parameters = ["time", "longitude", "latitude",
                 "depth", "chlorophyll", "pressure",
                 "temperature_final", "salinity_final",
@@ -156,10 +175,11 @@ if __name__ == "__main__":
                 "profile_index", "scatter_650"]
 
 
-    transects, all_valid_profiles = import_split_and_make_transects(parameters="all",
-                                                                    pre_processing_function=scatter_and_chlorophyll_processing,
-                                                                    despiking_method="minimum",
-                                                                    quench_method="night")
+    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
+                                                                    use_cache=False,
+                                                                    quenching_method=default_quenching_correction,
+                                                                    use_downcasts=True,
+                                                                    despiking_method="minimum")
     # mlds = [profile.mld for profile in all_valid_profiles]
     # indexes = [profile.index for profile in all_valid_profiles]
 

@@ -111,6 +111,13 @@ analysis of photochemical quencing corrections in antarctic chlorophyll data
 
 rewrote preprocessing function handling to allow for pre-processing caching and handling different quenching method functions
 
+### 18th March
+
+added photic depth calculations
+
+fixed mixed layer depths
+
+
 # TO DO
 
 take a look at par profiles
