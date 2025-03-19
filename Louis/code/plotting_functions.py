@@ -17,7 +17,7 @@ def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_si
     else:
         pcm = ax.pcolor(X, Y, data_array)
     
-    ax.set_xlabel("Downcast number")
+    ax.set_xlabel("Profile number")
     #ax.set_ylabel("Depth (m)")
     return pcm
 

@@ -2,12 +2,12 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects, Profile, Transect, two_dimensional_binning
-from preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
-from preprocessing.quenching.default import default_quenching_correction
 import seaborn as sns
 from scipy.optimize import curve_fit
 import warnings
+from code.setup.setup import import_split_and_make_transects, Profile, Transect, two_dimensional_binning
+from code.preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
+from code.preprocessing.quenching.default import default_quenching_correction
 
 
 

@@ -121,6 +121,13 @@ fixed mixed layer depths
 
 made repo public
 
+found anomaly in daytime bbp (day upcast 90) that causes an anomaly
+
+Theres consistently more bbp in downcasts than upcasts
+
+done some particle sinkning stuff
+
+Made a [powerpoint]()
 
 
 # TO DO
