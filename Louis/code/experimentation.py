@@ -9,14 +9,17 @@ import matplotlib.pyplot as plt
 transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
                                                                 use_cache=True,
                                                                 quenching_method=default_quenching_correction,
-                                                                use_downcasts=True,
+                                                                use_upcasts=True,
                                                                 use_supercache=True,
                                                                 despiking_method="minimum")
 fig, axs = plt.subplots(2, 1, sharex=True, height_ratios=[4, 1])
 
-for i in [0, 1]:
-    profiles = transects[i].get_profiles()
+t1 = transects[0].get_profiles()
+t2 = transects[1].get_profiles()
+t1 = t1[-10:]
+t2 = t2[:10]
 
+for i, profiles in enumerate([t1, t2]):
 
     up_day = [p for p in profiles if p.direction == "up" and not p.night]
     up_day_df = pd.concat([p.data for p in up_day])

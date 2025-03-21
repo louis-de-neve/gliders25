@@ -14,7 +14,7 @@ from code.preprocessing.quenching.default import default_quenching_correction
 transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
                                                                 use_cache=True,
                                                                 quenching_method=default_quenching_correction,
-                                                                use_downcasts=True,
+                                                                use_upcasts=True,
                                                                 despiking_method="minimum")
 
 plt.plot([p.photic_depth for p in all_valid_profiles])

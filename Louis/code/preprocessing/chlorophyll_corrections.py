@@ -178,7 +178,7 @@ if __name__ == "__main__":
     transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
                                                                     use_cache=False,
                                                                     quenching_method=default_quenching_correction,
-                                                                    use_downcasts=True,
+                                                                    use_upcasts=True,
                                                                     despiking_method="minimum")
     # mlds = [profile.mld for profile in all_valid_profiles]
     # indexes = [profile.index for profile in all_valid_profiles]

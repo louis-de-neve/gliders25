@@ -190,7 +190,7 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                                     pre_processing_function=no_pre_processing,
                                     use_cache:bool=True,
                                     quenching_method=no_quenching_correction,
-                                    use_downcasts:bool=False,
+                                    use_upcasts:bool=False,
                                     use_supercache:bool=False,
                                     **kwargs
                                     ) -> tuple[list[Transect], list[Profile]]:
@@ -212,9 +212,9 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
 
     
 
-    transects = create_transects(profiles, use_downcasts)
+    transects = create_transects(profiles, use_upcasts)
 
-    if not use_downcasts:
+    if not use_upcasts:
         downcasts = []
         for p in profiles:
             if p.direction == "up":
