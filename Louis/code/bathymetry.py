@@ -20,9 +20,11 @@ transects, all_valid_profiles = import_split_and_make_transects(pre_processing_f
                                                                 despiking_method="minimum")
 
 
+profiles = all_valid_profiles[36:65]
 
-profiles = all_valid_profiles[2:47] + all_valid_profiles[64:105]
-profiles.pop(5)
+#profiles = all_valid_profiles[2:47] + all_valid_profiles[64:105]
+#profiles.pop(5)
+
 #profiles = [p for p in profiles if p.data["depth"].max() > 425]
 
 #fig, ax = plt.subplots(2, 1, figsize=(6,6), height_ratios=[1, 0.05])
@@ -35,9 +37,9 @@ ax = [main_ax, bottom_ax, side_ax]
 # AXIS 0
 ax[0].set_ylabel("Depth (m)")
 plt.setp(ax[0].get_xticklabels(), visible=False)
-pcm = binned_plot(profiles, ax[0], "bbp_minimum_despiked", 2, 1000, cmap="inferno", norm=mpl.colors.LogNorm(vmin=0.0001, vmax=0.01))
+pcm = binned_plot(profiles, ax[0], "bbp_minimum_spikes", 10, 1000, cmap="inferno", norm=mpl.colors.LogNorm(vmin=0.00005, vmax=0.001))
 ax[0].yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
-ax[0].vlines(40.5, 0, -1000, color="red", linestyle="--")
+#ax[0].vlines(4.5, 0, -1000, color="red", linestyle="--")
 
 
 # AXIS 1
@@ -46,7 +48,7 @@ ax[1].set_ylabel("Ocean Depth (m)")
 bath = [p.bathymetry for p in profiles]
 ax[1].plot(range(len(bath)), bath, color="black")
 ax[1].yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
-ax[1].vlines(40.5, 0, -4500, color="red", linestyle="--")
+#ax[1].vlines(4.5, 0, -4500, color="red", linestyle="--")
 ax[1].set_ylim(-4500, 0)
 
 # AXIS 2
@@ -61,7 +63,7 @@ ax[2].set_ylabel(r"b$_{bp}$ (m$^{-1}$)")
 
 
 
-
+plt.suptitle("AB turning point")
 #plt.tight_layout()
-plt.savefig("Louis/outputs/bathymetry.png", dpi=300)
-plt.show()
+plt.savefig("Louis/outputs/bathymetrynew.png", dpi=300)
+#plt.show()

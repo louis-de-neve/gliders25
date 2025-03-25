@@ -124,7 +124,7 @@ ax[1].set_xticklabels([int(abs(tick)) for tick in xticks])
 
 #plt.tight_layout()
 plt.savefig("Louis/outputs/map_plot_bbp.png", dpi=300)
-#plt.show()
+plt.show()
 
 
 
