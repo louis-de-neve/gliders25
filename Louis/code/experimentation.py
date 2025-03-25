@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
                                                                 use_cache=True,
                                                                 quenching_method=default_quenching_correction,
-                                                                use_upcasts=True,
+                                                                use_downcasts=False,
                                                                 use_supercache=True,
                                                                 despiking_method="minimum")
 fig, axs = plt.subplots(2, 1, sharex=True, height_ratios=[4, 1])

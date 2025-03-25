@@ -5,7 +5,7 @@ import matplotlib as mpl
 import numpy as np
  
 
-def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_size:float=2, max_depth:float=1000.) -> mpl.collections.PolyQuadMesh:
+def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_size:float=2, max_depth:float=1000., **kwargs) -> mpl.collections.PolyQuadMesh:
     data_array = two_dimensional_binning(valid_profiles, parameter, bin_size, max_depth)
     depth_bins = -np.arange(bin_size/2, max_depth, bin_size)
     time_bins = np.arange(data_array.shape[1])
@@ -15,9 +15,9 @@ def binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bin_si
     # elif parameter == "chlorophyll_corrected":
     #         pcm = ax.pcolor(X, Y, data_array, norm=mpl.colors.LogNorm())
     else:
-        pcm = ax.pcolor(X, Y, data_array)
+        pcm = ax.pcolor(X, Y, data_array, **kwargs)
     
-    ax.set_xlabel("Profile number")
+    #ax.set_xlabel("Profile number")
     #ax.set_ylabel("Depth (m)")
     return pcm
 

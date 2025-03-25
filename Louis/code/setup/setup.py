@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import xarray as xr
 
 def import_data_from_mat_file(
         filename:str='Louis/data/data_631_allqc.mat',
@@ -55,6 +56,7 @@ class Profile:
         self.end_location = [cast_data["longitude"].iloc[-1], cast_data["latitude"].iloc[-1]]
         self.profile_duration = self.end_time - self.start_time
         self.MLD = np.nan
+        self.bathymetry = 0
         self.night = False
 
     def __repr__(self) -> str:
@@ -86,12 +88,26 @@ class Profile:
         self.profile_duration = self.data["DateTime"].iloc[-1] - self.start_time
         self.direction = "up" if self.data["depth"].iloc[0] > self.data["depth"].iloc[-1] else "down" # depth is positive
         return self
+    
+    def get_bathymetry(self, dataset:xr.Dataset) -> float:
+        lon = self.start_location[0]
+        lat = self.start_location[1]
+        bathymetry = dataset.sel(lon=lon, lat=lat, method="nearest")["elevation"].values
+        return bathymetry
+
 
 def concatenate_profiles(profiles:list[Profile]) -> pd.DataFrame:
     p0 = profiles[0]
     for profile in profiles[1:]:
         p0.merge(profile)
     return p0.data  
+
+
+def apply_bathymetry(profiles:list[Profile]) -> list[Profile]:
+    dataset = xr.open_dataset('Louis/data/gebco_2024_n-55.0_s-65.0_w-40.0_e-32.0.nc', engine="netcdf4")
+    for profile in profiles:
+        profile.bathymetry = profile.get_bathymetry(dataset)
+    return profiles
 
 
 def split_raw_data_into_profiles(df:pd.DataFrame, include_non_integer_profiles:bool=True) -> list[Profile]:
@@ -113,7 +129,7 @@ def split_raw_data_into_profiles(df:pd.DataFrame, include_non_integer_profiles:b
                 integer_profiles.append(profile)
 
     print(f"Found {len(integer_profiles)} valid profiles")
-    
+    integer_profiles = apply_bathymetry(integer_profiles)
     return integer_profiles
 
 
@@ -139,7 +155,7 @@ class Transect:
         return self.profiles
 
 
-def create_transects(valid_profiles:list[pd.DataFrame], use_upcasts:bool=False) -> list[Transect]:
+def create_transects(valid_profiles:list[pd.DataFrame], use_downcasts:bool=False) -> list[Transect]:
     TRANSECT_INDICES = {
     "A": (1, 89),
     "B": (90, 225),
@@ -162,12 +178,12 @@ def create_transects(valid_profiles:list[pd.DataFrame], use_upcasts:bool=False) 
         for profile in transect_profiles:
             profile.allocate_profile_to_transect(transect_name)
 
-        if not use_upcasts:
-            downcasts = []
+        if not use_downcasts:
+            upcasts = []
             for p in transect_profiles:
                 if p.direction == "up":
-                    downcasts.append(p)
-            transect_profiles=downcasts
+                    upcasts.append(p)
+            transect_profiles=upcasts
 
         transect_list.append(Transect(transect_name, transect_profiles))
     
@@ -176,11 +192,15 @@ def create_transects(valid_profiles:list[pd.DataFrame], use_upcasts:bool=False) 
     return transect_list
 
 
+
+
+
 def no_pre_processing(profiles:list[Profile], a, b, **kwargs) -> list[Profile]:
     return profiles
 
 def no_quenching_correction(profiles:list[Profile], **kwargs) -> list[Profile]:
     return profiles
+
 
 def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude",
                                                                "depth", "chlorophyll", "pressure",
@@ -190,7 +210,7 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                                     pre_processing_function=no_pre_processing,
                                     use_cache:bool=True,
                                     quenching_method=no_quenching_correction,
-                                    use_upcasts:bool=False,
+                                    use_downcasts:bool=False,
                                     use_supercache:bool=False,
                                     **kwargs
                                     ) -> tuple[list[Transect], list[Profile]]:
@@ -198,29 +218,36 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
     if use_supercache and os.path.exists("Louis/cache/supercache.pkl"):
         with open("Louis/cache/supercache.pkl", "rb") as f:
             data = pd.read_pickle(f)
-        transects = data["transects"]
         profiles = data["profiles"]
-        return transects, profiles
+        transects = data["transects"]
 
+
+        if not use_downcasts:
+            upcasts = []
+            for p in profiles:
+                if p.direction == "up":
+                    upcasts.append(p)
+            profiles=upcasts
+
+        return transects, profiles
 
     if not use_cache:
         df = import_data_from_mat_file(parameters=parameters)
         profiles = split_raw_data_into_profiles(df)
     else:
         profiles = []
+
+
     profiles = pre_processing_function(profiles, quenching_method, use_cache, **kwargs)
-
     
-
-    transects = create_transects(profiles, use_upcasts)
-
-    if not use_upcasts:
+    transects = create_transects(profiles, use_downcasts)
+    if not use_downcasts:
         downcasts = []
         for p in profiles:
             if p.direction == "up":
                 downcasts.append(p)
         profiles=downcasts
-    
+
     print("caching data...")
     with open("Louis/cache/supercache.pkl", "wb") as f:
         pd.to_pickle({"profiles": profiles, "transects": transects}, f)

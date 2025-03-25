@@ -27,35 +27,45 @@ def scatter_conversion_and_despiking(profiles:list[Profile]) -> list[Profile]:
 
     # alternative method is the same as above, but then averaged with an average local minima (4x10wide rolling mean of the 30 wide minima)
 
-    for profile in profiles:
+    for i, profile in enumerate(profiles):
         beta = np.asarray(profile.data["scatter_650"])
         temp = np.asarray(profile.data["temperature_final"].interpolate())
         salinity = np.asarray(profile.data["salinity_final"].interpolate())   
+
         profile.data["bbp"] = beta_to_bbp(beta, temp, salinity)
-        bbp  = profile.data["bbp"]
 
+        temporary_df = profile.data.dropna(subset=["bbp"]).copy()
 
-        bbp_local_minima = bbp.rolling(window=7, min_periods=1, center=True).min()
+        bbp = temporary_df["bbp"]
+        bbp_minima = bbp.rolling(window=7, min_periods=1, center=True).min()
         #for i in range(4):
         #   bbp_local_minima = bbp_local_minima.rolling(window=15, min_periods=1, center=True).mean()
-        bbp_local_minima = bbp_local_minima.rolling(window=7, min_periods=1, center=True).max()
+        bbp_local_minima = bbp_minima.rolling(window=7, min_periods=1, center=True).max()
+        
+        temporary_df["bbp_minimum_despiked"] = bbp_local_minima
+
+        profile.data = profile.data.merge(temporary_df, how="outer")
+        profile.data["bbp_minimum_despiked"] = profile.data["bbp_minimum_despiked"].interpolate()
+        profile.data["bbp_minimum_spikes"] = profile.data["bbp"] - profile.data["bbp_minimum_despiked"]
 
 
-        bbp = bbp.rolling(window=30, min_periods=1, center=True).median()
-        b, a = sp.signal.butter(3, 0.1, analog=False)
-        bbp = sp.signal.filtfilt(b, a, bbp.interpolate())
-        profile.data["bbp_mean_despiked"] = bbp
-        bbp = profile.data["bbp_mean_despiked"]
-        bbp = bbp.rolling(window=40, min_periods=1, center=True).median()
-        bbp = bbp.rolling(window=7, min_periods=1, center=True).mean()
-
+        # bbp = bbp.rolling(window=30, min_periods=1, center=True).median()
+        # b, a = sp.signal.butter(3, 0.1, analog=False)
+        # bbp = sp.signal.filtfilt(b, a, bbp.interpolate())
+        # profile.data["bbp_mean_despiked"] = bbp
+        # bbp = profile.data["bbp_mean_despiked"]
+        # bbp = bbp.rolling(window=40, min_periods=1, center=True).median()
+        # bbp = bbp.rolling(window=7, min_periods=1, center=True).mean()
+    
     
         profile.data["bbp_mean_despiked"] = bbp    
         profile.data["bbp_spikes"] = profile.data["bbp"] - profile.data["bbp_mean_despiked"]
 
-        bbp_alternative= bbp_local_minima #+ 0.5*(bbp - bbp_local_minima)
-        profile.data["bbp_minimum_despiked"] = bbp_alternative
-        profile.data["bbp_minimum_spikes"] = profile.data["bbp"] - profile.data["bbp_minimum_despiked"]
+        profile.data["bbp_mean_despiked"] = bbp    
+        profile.data["bbp_spikes"] = profile.data["bbp"] - profile.data["bbp_mean_despiked"]
+    
+        # profile.data["bbp_mean_despiked"] = bbp    
+        # profile.data["bbp_spikes"] = profile.data["bbp"] - profile.data["bbp_mean_despiked"]
 
     return profiles
 
@@ -178,7 +188,7 @@ if __name__ == "__main__":
     transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
                                                                     use_cache=False,
                                                                     quenching_method=default_quenching_correction,
-                                                                    use_upcasts=True,
+                                                                    use_downcasts=True,
                                                                     despiking_method="minimum")
     # mlds = [profile.mld for profile in all_valid_profiles]
     # indexes = [profile.index for profile in all_valid_profiles]
