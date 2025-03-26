@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects
+from setup import import_split_and_make_transects
 from code.plotting_functions import binned_plot
-from Louis.code.preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
 
 
 

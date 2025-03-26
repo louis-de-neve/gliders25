@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects, Transect, Profile
-from preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
-from preprocessing.quenching.default import default_quenching_correction
+from setup import import_split_and_make_transects, Transect, Profile
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
+from preprocessing.chlorophyll.default_quenching import default_quenching_correction
 from plotting_functions import binned_plot
 import matplotlib as mpl
 from matplotlib import MatplotlibDeprecationWarning
@@ -11,11 +11,8 @@ import pandas as pd
 warnings.filterwarnings("ignore",category=MatplotlibDeprecationWarning)
 
 
-transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
-                                                                use_supercache=True,
-                                                                quenching_method=default_quenching_correction,
-                                                                use_downcasts=False,
-                                                                despiking_method="minimum")
+transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
+                                                                use_downcasts=False,)
 
 
 tA = all_valid_profiles[2:47]

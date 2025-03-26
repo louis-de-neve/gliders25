@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects, concatenate_profiles
+from setup import import_split_and_make_transects, concatenate_profiles
 import numpy as np
 from plotting_functions import binned_plot
 from scipy.stats import linregress
-from preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing as new_preprocessing
-from preprocessing.deprecated_bbp_correction_and_despiking import scatter_and_chlorophyll_preprocessing as old_preprocessing
-from preprocessing.quenching.default import default_quenching_correction
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing as new_preprocessing
+from Louis.deprecatedOrOld.deprecated_bbp_correction_and_despiking import scatter_and_chlorophyll_preprocessing as old_preprocessing
+from preprocessing.chlorophyll.default_quenching import default_quenching_correction
 import seaborn as sns
 import pandas as pd
 import pickle
@@ -84,7 +84,7 @@ def compare():
 
 
 def run():
-    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, quenching_method=default_quenching_correction, use_cache=True,
+    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, quenching_correction=default_quenching_correction,
                                                                     despiking_method="minimum")
     p_of_interest = []
     for p in all_valid_profiles:
@@ -135,7 +135,7 @@ def run():
 def dump():
     # change the line below and the label as well as depth vs MLD_normalised_depth
     preprocessing = new_preprocessing
-    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=preprocessing, quenching_method=default_quenching_correction, use_cache=True,
+    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=preprocessing, quenching_correction=default_quenching_correction,
                                                                     despiking_method="minimum")
     
     fig, axs = plt.subplots(1,1)
@@ -305,7 +305,7 @@ def load():
 
 
 def correlate():
-    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, quenching_method=default_quenching_correction, use_cache=True,
+    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, quenching_correction=default_quenching_correction,
                                                                     despiking_method="minimum")
     
     
@@ -320,7 +320,7 @@ def correlate():
 
 
 def transect_plot():
-    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, use_cache=True, quenching_method=default_quenching_correction)
+    transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=new_preprocessing, quenching_correction=default_quenching_correction)
     for j in range(10):
         fig, axs = plt.subplots(2, 1, sharey=True)
         axs = axs.flatten()

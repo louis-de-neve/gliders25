@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects
-from code.plotting_functions import temp_salinity_plot
-from Louis.code.preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
+from setup import import_split_and_make_transects
+from plotting_functions import temp_salinity_plot
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
 
-transects, all_valid_profiles = import_split_and_make_transects(parameters="all", pre_processing_function=scatter_and_chlorophyll_processing)
+transects, all_valid_profiles = import_split_and_make_transects()
     
 #all transect temp/salinity plot:
 fig, axs = plt.subplots(2, 5, figsize=(30, 10), sharey=True)

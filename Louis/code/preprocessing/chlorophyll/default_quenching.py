@@ -36,7 +36,7 @@ def default_quenching_correction(profiles:list, despiking_method:str="minimum") 
             
 
 
-            chlorophyll = profile.data["chlorophyll"]
+            chlorophyll = profile.data["chlorophyll"].fillna(0)
             bbp = profile.data["bbp"]
             depth = profile.data["depth"]
 
@@ -53,7 +53,7 @@ def default_quenching_correction(profiles:list, despiking_method:str="minimum") 
             
             profile.data["chlorophyll_corrected"] = chlorophyll_corrected
         else:
-            profile.data["chlorophyll_corrected"] = profile.data["chlorophyll"]
+            profile.data["chlorophyll_corrected"] = profile.data["chlorophyll"].fillna(0)
 
           
 

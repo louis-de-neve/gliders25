@@ -2,9 +2,8 @@ import scipy.io
 import numpy as np
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 import xarray as xr
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
 
 def import_data_from_mat_file(
         filename:str='Louis/data/data_631_allqc.mat',
@@ -63,7 +62,7 @@ class Profile:
         return f"Profile {self.index} from transect {self.transect_index}"
         
     def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0, max_depth:float=1000.) -> list[float]:
-        bins = np.arange(bin_size/2, max_depth, bin_size)
+        bins = np.arange(0, max_depth+bin_size, bin_size)
         d = self.data
         d = d[d["depth"] < max_depth]
         d = d[d["depth"] >= bin_size/2]
@@ -193,29 +192,16 @@ def create_transects(valid_profiles:list[pd.DataFrame], use_downcasts:bool=False
 
 
 
-
-
-def no_pre_processing(profiles:list[Profile], a, b, **kwargs) -> list[Profile]:
-    return profiles
-
-def no_quenching_correction(profiles:list[Profile], **kwargs) -> list[Profile]:
-    return profiles
-
-
 def import_split_and_make_transects(parameters:list[str]|None=["time", "longitude", "latitude",
                                                                "depth", "chlorophyll", "pressure",
                                                                "temperature_final", "salinity_final",
                                                                "temperature", "salinity", "temperature_corrected_thermal",
                                                                "profile_index", "scatter_650", "PAR"],
-                                    pre_processing_function=no_pre_processing,
-                                    use_cache:bool=True,
-                                    quenching_method=no_quenching_correction,
                                     use_downcasts:bool=False,
-                                    use_supercache:bool=False,
-                                    **kwargs
+                                    use_cache:bool=False,
                                     ) -> tuple[list[Transect], list[Profile]]:
     
-    if use_supercache and os.path.exists("Louis/cache/supercache.pkl"):
+    if use_cache and os.path.exists("Louis/cache/supercache.pkl"):
         with open("Louis/cache/supercache.pkl", "rb") as f:
             data = pd.read_pickle(f)
         profiles = data["profiles"]
@@ -231,16 +217,12 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
 
         return transects, profiles
 
-    if not use_cache:
-        df = import_data_from_mat_file(parameters=parameters)
-        profiles = split_raw_data_into_profiles(df)
-    else:
-        profiles = []
-
-
-    profiles = pre_processing_function(profiles, quenching_method, use_cache, **kwargs)
     
+    df = import_data_from_mat_file(parameters=parameters)
+    profiles = split_raw_data_into_profiles(df)
+    profiles = scatter_and_chlorophyll_processing(profiles, use_downcasts)
     transects = create_transects(profiles, use_downcasts)
+    
     if not use_downcasts:
         downcasts = []
         for p in profiles:

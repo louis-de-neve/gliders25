@@ -1,25 +1,18 @@
 import matplotlib.pyplot as plt
-from setup.setup import import_split_and_make_transects, Transect, Profile
-from preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
-from preprocessing.quenching.default import default_quenching_correction
-from plotting_functions import binned_plot
+from setup import import_split_and_make_transects, Transect, Profile
+from preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
+from preprocessing.chlorophyll.default_quenching import default_quenching_correction
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-from scipy.stats import linregress
 import matplotlib.axes as mpl_axes
 from matplotlib.colors import ListedColormap
-import netCDF4
 import xarray as xr
 from mpl_toolkits.basemap import Basemap
 
 
-transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
-                                                                use_cache=True,
-                                                                use_supercache=True,
-                                                                quenching_method=default_quenching_correction,
-                                                                use_downcasts=True,
-                                                                despiking_method="minimum")
+transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
+                                                                use_downcasts=True,)
 
 def map_plot(profiles:list[Profile], colour_parameter:str, ax:mpl_axes.Axes, variable_limit=None, basemap=None) -> None:
     longitudes, latitudes, hues, all_hues = [], [], [], []

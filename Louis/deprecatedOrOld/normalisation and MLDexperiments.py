@@ -5,15 +5,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.optimize import curve_fit
 import warnings
-from code.setup.setup import import_split_and_make_transects, Profile, Transect, two_dimensional_binning
-from code.preprocessing.chlorophyll_corrections import scatter_and_chlorophyll_processing
-from code.preprocessing.quenching.default import default_quenching_correction
+from Louis.code.setup import import_split_and_make_transects, Profile, Transect, two_dimensional_binning
+from code.preprocessing.apply_preprocessing import scatter_and_chlorophyll_processing
+from code.preprocessing.chlorophyll.default_quenching import default_quenching_correction
 
 
 
 transects, all_valid_profiles = import_split_and_make_transects(pre_processing_function=scatter_and_chlorophyll_processing,
-                                                                use_cache=True,
-                                                                quenching_method=default_quenching_correction,
+                                                                quenching_correction=default_quenching_correction,
                                                                 use_downcasts=True,
                                                                 despiking_method="minimum")
 
