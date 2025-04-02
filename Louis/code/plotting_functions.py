@@ -36,14 +36,14 @@ def new_binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bi
         data = np.asarray([data]).T
 
         end_time = p.start_time + 2*(p.end_time - p.start_time)
-        offset = 2
-        if "down" in dirs:
-            end_time = p.end_time    
-            offset = 1
+        
         p.valid_next = "n"
-        if i < len(valid_profiles)-1 and valid_profiles[i+1].index - p.index == 1:
-            end_time = valid_profiles[i+1].start_time
-            p.valid_next="y"
+        if "down" in dirs:
+            end_time = p.end_time 
+            if i != len(valid_profiles)-1 and valid_profiles[i+1].index - p.index < 3:
+                end_time = valid_profiles[i+1].start_time
+                p.valid_next="y"
+                
         time_bins = [p.start_time, end_time]      
         X, Y = np.meshgrid(time_bins, depth_bins)
 

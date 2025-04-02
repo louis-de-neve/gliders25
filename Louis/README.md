@@ -129,6 +129,19 @@ done some particle sinkning stuff
 
 Made a [powerpoint]()
 
+### late march
+
+reformatting (lots)
+
+rewrote caching functions
+
+bathymetry interpolation
+
+### 2nd April
+
+bubble correction stuff
+
+this works!
 
 # TO DO
 
