@@ -12,29 +12,42 @@ warnings.filterwarnings("ignore",category=MatplotlibDeprecationWarning)
 
 
 transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
-                                                                use_downcasts=False,)
+                                                                use_downcasts=True,)
+profiles = all_valid_profiles[1:211]
+up = [p.data for p in profiles if p.direction == "up"]
+down  = [p.data for p in profiles if p.direction == "down"]
 
 
-tA = all_valid_profiles[2:47]
-tA.pop(5)
-tA = [p.data for p in tA]
 
-tB = [p.data for p in all_valid_profiles[64:105]]
-2
+up = pd.concat(up).dropna(subset=["bbp_minimum_despiked"])
+down = pd.concat(down).dropna(subset=["bbp_minimum_despiked"])
 
-tA = pd.concat(tA).dropna(subset=["bbp_minimum_spikes"])
-tB = pd.concat(tB).dropna(subset=["bbp_minimum_spikes"])
+up["depth"] = up["depth"].round(0)
+down["depth"] = down["depth"].round(0)
 
-tA["depth"] = tA["depth"].round(0)
-tB["depth"] = tB["depth"].round(0)
+up_original = up.groupby("depth")["bbp_minimum_despiked"].mean()
+down_original = down.groupby("depth")["bbp_minimum_despiked"].mean()
+down_new = down.groupby("depth")["bbp_debubbled"].mean()
 
-tAspikes = tA.groupby("depth")["bbp_minimum_spikes"].mean()
-tBspikes = tB.groupby("depth")["bbp_minimum_spikes"].mean()
+old_diff = down_original - up_original
+new_diff = down_new - up_original
+old_diff.pop(0)
+old_diff.pop(1) # ignore top 1m (0 and 1m)
+new_diff.pop(0)
+new_diff.pop(1)
 
-tAsum = [sum(tAspikes[:i]) for i in range(len(tAspikes))]
-tBsum = [sum(tBspikes[:i]) for i in range(len(tBspikes))]
+old_avg = np.mean(old_diff)
+new_avg = np.mean(new_diff)
 
-plt.plot(tAsum, label="Transect A")
-plt.plot(tBsum, label="Transect B")
+old_avg_100 = np.mean(old_diff[:100])
+new_avg_100 = np.mean(new_diff[:100])
+
+
+plt.plot(old_diff, label="Original, mean = {:.2e}, top 100 mean: {:.2e}".format(old_avg, old_avg_100))
+plt.plot(new_diff, label='"debubbled", mean = {:.2e}, top 100 mean: {:.2e}'.format(new_avg, new_avg_100))
+plt.xlabel("Depth (m)")
+plt.ylabel(r"$\Delta b_{bp}$ ($m^{-1}$)")
+plt.title("Difference between down and up casts")
+plt.savefig("Louis/outputs/bbp_diff.png", dpi=300)
 plt.legend()
 plt.show()
