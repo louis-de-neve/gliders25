@@ -52,6 +52,8 @@ def new_binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bi
 
 
 
+
+
 def temp_salinity_plot(profiles:list[Profile], ax:plt.axes) -> mpl.collections.PathCollection:
     for profile in profiles:
         pcm = ax.scatter(profile.data["salinity_final"], profile.data["temperature_final"],

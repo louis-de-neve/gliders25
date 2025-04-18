@@ -1,14 +1,16 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from setup import import_split_and_make_transects
 from plotting_functions import binned_plot, new_binned_plot
 
 
-transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
+transects, all_valid_profiles = import_split_and_make_transects(use_cache=False,
                                                                 use_downcasts=True,)
 
 profiles = all_valid_profiles[460:666]
+
 #profiles = all_valid_profiles[666:780]
 #profiles = all_valid_profiles[36:65]
 
@@ -20,6 +22,10 @@ profiles = all_valid_profiles[460:666]
 # profiles.pop(47)
 #profiles.pop(14)
 #profiles.pop(44)
+
+
+
+
 
 ts = [p.transect_index for p in profiles]
 if ts[0] != ts[-1]:
@@ -41,12 +47,20 @@ plt.setp(ax[0].get_xticklabels(), visible=False)
 
 my_cmap = mpl.colormaps["viridis"].copy()
 my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
-my_norm = mpl.colors.LogNorm(vmin=0.0004, vmax=0.005, clip=True) # 0.0001, 10 for chlorophyll 0.0004, 0.005 for bbp
-my_norm = mpl.colors.LogNorm(vmin=0.0001, vmax=0.5, clip=True)
+my_norm = mpl.colors.LogNorm(vmin=0.007, vmax=3, clip=True)
 pcm = new_binned_plot(profiles, ax[0], "chlorophyll_corrected", 10, 1000, cmap=my_cmap, norm=my_norm)
 ax[0].yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
 #ax[0].vlines(profiles[change_index].end_time, 0, -1000, color="red", linestyle="--")
 ax[0].set_ylim(-1000, 0)
+
+az = [-p.active_zone for p in profiles]
+az = list(pd.Series(az).interpolate(limit=3))
+st = [p.start_time + (p.end_time - p.start_time)/2 for p in profiles]
+ax[0].plot(st, az, color="red")
+
+
+
+
 
 
 # AXIS 1
@@ -66,7 +80,7 @@ for m in masks:
     ax[1].plot(times, baths, color="black")
     
 ax[1].set_xlabel("Date")
-ax[1].set_ylabel("Ocean Depth (m)")
+ax[1].set_ylabel("Depth of chlorophyll active zone (m)")
 ax[1].yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
 ax[1].set_xticks(ax[1].get_xticks()[::2])
 #ax[1].vlines(profiles[change_index].end_time, 0, -4500, color="red", linestyle="--")

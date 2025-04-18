@@ -26,7 +26,8 @@ up["depth"] = up["depth"].round(0)
 down["depth"] = down["depth"].round(0)
 
 up_original = up.groupby("depth")["bbp_minimum_despiked"].mean()
-down_original = down.groupby("depth")["bbp_minimum_despiked"].mean()
+down_original = down.groupby("depth")["bbp_debubbled_old"].mean()
+#down_original = down.groupby("depth")["bbp_minimum_despiked"].mean()
 down_new = down.groupby("depth")["bbp_debubbled_despiked"].mean()
 
 old_diff = down_original - up_original
@@ -43,11 +44,11 @@ old_avg_100 = np.mean(old_diff[:100])
 new_avg_100 = np.mean(new_diff[:100])
 
 
-plt.plot(old_diff, label="Original, mean = {:.2e}, top 100 mean: {:.2e}".format(old_avg, old_avg_100))
-plt.plot(new_diff, label='"debubbled", mean = {:.2e}, top 100 mean: {:.2e}'.format(new_avg, new_avg_100))
+plt.plot(old_diff, label="Debubbling applied to despiked data\n mean = {:.2e}, top 100 mean: {:.2e}".format(old_avg, old_avg_100))
+plt.plot(new_diff, label='Debubbling applied to raw data, then despiked\n mean = {:.2e}, top 100 mean: {:.2e}'.format(new_avg, new_avg_100))
 plt.xlabel("Depth (m)")
 plt.ylabel(r"$\Delta b_{bp}$ ($m^{-1}$)")
 plt.title("Difference between down and up casts")
-plt.savefig("Louis/outputs/bbp_diff.png", dpi=300)
+plt.savefig("Louis/outputs/bbp_method.png", dpi=300)
 plt.legend()
 plt.show()

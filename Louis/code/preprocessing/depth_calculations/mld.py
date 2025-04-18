@@ -21,6 +21,7 @@ def MLD_calculation(profiles:list) -> list:
         temp_df = df.dropna(subset=["density"])
         surface_density = temp_df.iloc[0]["density"] if len(temp_df) > 0 else 0
         df["density_anomaly"] = df["density"] - surface_density 
+        profile.data["density_anomaly"] = profile.data["density"] - surface_density
         df = df[df["density_anomaly"] > 0.03]
         df = df[df["depth"] < 200]
 

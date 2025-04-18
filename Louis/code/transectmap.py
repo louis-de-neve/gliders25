@@ -44,7 +44,7 @@ m.drawmeridians(np.arange(-40, -30, 1), labels=[0,0,0,1])
 
 
 
-transects, all_valid_profiles = import_split_and_make_transects(use_cache=True)
+transects, all_valid_profiles = import_split_and_make_transects(use_cache=True, use_downcasts=True)
 profiles = all_valid_profiles#[243:283] + all_valid_profiles[283:317]
 transect_map(transects, profiles, m)
 plt.savefig("Louis/outputs/transect_map.png", dpi=300)

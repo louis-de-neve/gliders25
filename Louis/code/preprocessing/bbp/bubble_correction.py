@@ -4,6 +4,7 @@ import pandas as pd
 from scipy.stats import linregress
 from scipy.optimize import curve_fit
 import warnings
+from preprocessing.bbp.scatter_despiking import scatter_conversion_and_despiking
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
 def bubble_correction(profiles:list) -> list:
@@ -41,14 +42,23 @@ def bubble_correction(profiles:list) -> list:
         d2 = np.maximum(difference, 0)
 
         popt, pcov = curve_fit(piecewise_function, np.arange(1000), difference, p0=[d2[i] for i in ylocs], bounds=(0, np.inf))
-        adjustment_test = piecewise_function(np.arange(1000), *popt)
-        profiles[int(downcast.index - 1)].data["bbp_debubbled"] = downcast.data["bbp_minimum_despiked"] - np.interp(downcast.data["depth"], np.arange(1000), adjustment_test)
-        
+        bubble_correction_adjustment = piecewise_function(np.arange(1000), *popt)
+        # if i == 25:
+        #     plt.plot(difference, color="black")
+        #     plt.plot(bubble_correction_adjustment, color="red")
+        #     plt.show()
+        raw_debubbled = downcast.data["bbp"] - np.interp(downcast.data["depth"], np.arange(1000), bubble_correction_adjustment)
+        profiles[int(downcast.index - 1)].data["bbp_debubbled"] = raw_debubbled
+        profiles[int(downcast.index - 1)].data["bbp_debubbled_old"] = downcast.data["bbp_minimum_despiked"] - np.interp(downcast.data["depth"], np.arange(1000), bubble_correction_adjustment)
+    
 
     for p in profiles:
         if "bbp_debubbled" not in p.data.columns:
-            p.data["bbp_debubbled"] = p.data["bbp_minimum_despiked"]
+            p.data["bbp_debubbled"] = p.data["bbp"]
+        if "bbp_debubbled_old" not in p.data.columns:
+            p.data["bbp_debubbled_old"] = p.data["bbp_minimum_despiked"]
 
+    scatter_conversion_and_despiking(profiles, rerun=True)
     return profiles
         
         # OLD METHOD

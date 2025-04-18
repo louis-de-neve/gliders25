@@ -4,6 +4,7 @@ from preprocessing.chlorophyll.deep_chlorophyll_correction import deep_chlorophy
 from preprocessing.chlorophyll.default_quenching import default_quenching_correction
 from preprocessing.depth_calculations.mld import MLD_calculation
 from preprocessing.depth_calculations.photic import photic_calculation
+from preprocessing.depth_calculations.chlorophyll_zone import chlorophyll_zone
 
 
 
@@ -15,6 +16,7 @@ def scatter_and_chlorophyll_processing(profiles:list, use_downcasts:bool) -> lis
         deep_chlorophyll_correction,
         photic_calculation,
         default_quenching_correction,
+        chlorophyll_zone,
     ]
     
     if not use_downcasts:

@@ -146,13 +146,10 @@ this works!
 # TO DO
 
 
-up and down casts
-
-correct that bubble stuff
-
-make some clear transects (of chlorophyll)
-
-
+TODO ADD NOISE FILTERING FROM BRIGGS ET AL 2011
+ADD CHLOROPHYLL DATA
 
 # Q's
 
+Alternative method of finding MLD:
+location of the max of the first derivative of density anomaly (within top 300m?)

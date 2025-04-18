@@ -66,9 +66,14 @@ class Profile:
         d = self.data
         d = d[d["depth"] < max_depth]
         d = d[d["depth"] >= bin_size/2]
+        d[parameter] = d[parameter].replace(0, np.nan)
         binned_data = d.groupby(pd.cut(d["depth"], bins), observed=False)[parameter].mean().reset_index()
         binned_data.columns = ["depth_bin", f"binned_{parameter}"]
-        binned_data = list(binned_data[f"binned_{parameter}"])
+        binned_data = list(binned_data[f"binned_{parameter}"].fillna(0))
+        if self.data["depth"].max() < max_depth:
+            data_max_depth = self.data["depth"].max()
+            binned_data = [d if i <= data_max_depth/bin_size else np.nan for i, d in enumerate(binned_data)]
+
         binned_data += [np.nan] * int( max_depth/bin_size - len(binned_data))
         return binned_data
     
@@ -215,6 +220,11 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                     upcasts.append(p)
             profiles=upcasts
 
+        if use_downcasts:
+            profiles.pop(538) # remove bad profiles
+
+
+
         return transects, profiles
 
     
@@ -235,7 +245,9 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
         pd.to_pickle({"profiles": profiles, "transects": transects}, f)
 
 
-        
+    
+
+
     return transects, profiles
 
 if __name__ == "__main__":
