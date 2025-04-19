@@ -40,7 +40,7 @@ def new_binned_plot(valid_profiles:list[Profile], ax:plt.axes, parameter:str, bi
         p.valid_next = "n"
         if "down" in dirs:
             end_time = p.end_time 
-            if i != len(valid_profiles)-1 and valid_profiles[i+1].index - p.index < 3:
+            if i != len(valid_profiles)-1 and valid_profiles[i+1].index - p.index < 4:
                 end_time = valid_profiles[i+1].start_time
                 p.valid_next="y"
                 

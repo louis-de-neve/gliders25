@@ -8,12 +8,22 @@ from matplotlib import MatplotlibDeprecationWarning
 import warnings
 import numpy as np
 import pandas as pd
+from preprocessing.bbp.bubble_correction import bubble_correction
 warnings.filterwarnings("ignore",category=MatplotlibDeprecationWarning)
 
 
 transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
                                                                 use_downcasts=True,)
-profiles = all_valid_profiles[1:211]
+
+#all_valid_profiles = bubble_correction(all_valid_profiles)
+
+# p = all_valid_profiles[150].data
+# plt.plot(p["depth"], p["bbp_minimum_despiked"])
+# plt.plot(p["depth"], p["bbp_debubbled_despiked"])
+# plt.show()
+
+all_valid_profiles.pop(243)
+profiles = all_valid_profiles[90:]
 up = [p.data for p in profiles if p.direction == "up"]
 down  = [p.data for p in profiles if p.direction == "down"]
 
@@ -48,6 +58,7 @@ plt.plot(new_diff, label='"debubbled", mean = {:.2e}, top 100 mean: {:.2e}'.form
 plt.xlabel("Depth (m)")
 plt.ylabel(r"$\Delta b_{bp}$ ($m^{-1}$)")
 plt.title("Difference between down and up casts")
+plt.hlines(0, 0, 1000, color="gray")
 plt.savefig("Louis/outputs/bbp_diff.png", dpi=300)
 plt.legend()
 plt.show()

@@ -4,6 +4,7 @@ import pandas as pd
 from scipy.stats import linregress
 from scipy.optimize import curve_fit
 import warnings
+from tqdm import tqdm
 from preprocessing.bbp.scatter_despiking import scatter_conversion_and_despiking
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -13,16 +14,19 @@ def bubble_correction(profiles:list) -> list:
     upcasts = [p for p in profiles if p.direction == "up"]
     upcast_data = [p.apply_binning_to_parameter("bbp_minimum_despiked", 1, 1000) for p in upcasts]
     upcast_times_dict = {p.start_time : i for i, p in enumerate(upcasts)}
-    ylocs = [0, 10, 20, 30, 50, 100, 999]
+    ylocs = [0, 10, 20, 30, 50, 80, 120, 160, 990]
+    ylocs = np.append(np.arange(0, 170, 10), 990)
     
     def piecewise_function(xs, *yvals):
         section = np.zeros_like(xs)
-        for i, xlim in enumerate(ylocs[:-1]):
-            section = section + np.asarray([yvals[i] + (yvals[i+1] - yvals[i]) * (x - xlim) / (ylocs[i+1] - xlim) if (x >= xlim) and (x < ylocs[i+1]) else 0 for x in xs])
-
+        for j, xlim in enumerate(ylocs[:-1]):
+            section = section + np.asarray([yvals[j] + (yvals[j+1] - yvals[j]) * (x - xlim) / (ylocs[j+1] - xlim) if (x >= xlim) and (x < ylocs[j+1]) else 0 for x in xs])
         return section
 
-    for i, downcast in enumerate(downcasts):
+    for i, downcast in tqdm(enumerate(downcasts)):
+
+        
+
         st = downcast.start_time
         relative_times = {abs(st - t): i for t, i in upcast_times_dict.items()}
         closest_times = [abs(st - t) for t in upcast_times_dict.keys()]
@@ -40,8 +44,10 @@ def bubble_correction(profiles:list) -> list:
         difference = np.nan_to_num(difference, nan=0)
         
         d2 = np.maximum(difference, 0)
+        p0 = [d2[i] for i in ylocs]
 
-        popt, pcov = curve_fit(piecewise_function, np.arange(1000), difference, p0=[d2[i] for i in ylocs], bounds=(0, np.inf))
+
+        popt, pcov = curve_fit(piecewise_function, np.arange(1000), difference, p0=p0, bounds=(0, np.inf))
         bubble_correction_adjustment = piecewise_function(np.arange(1000), *popt)
         # if i == 25:
         #     plt.plot(difference, color="black")

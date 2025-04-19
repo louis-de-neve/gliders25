@@ -36,8 +36,11 @@ def scatter_conversion_and_despiking(profiles:list, rerun=False) -> list:
 
 
             profile.data["bbp_debubbled_despiked"] = profile.data["bbp_debubbled_despiked"].interpolate()
-            profile.data["bbp_debubbled_spikes"] = profile.data["bbp_debubbled"] - profile.data["bbp_debubbled_despiked"]
-
+            spikes = profile.data["bbp_debubbled"] - profile.data["bbp_debubbled_despiked"]
+            profile.data["bbp_debubbled_spikes"] = spikes
+            spikes[spikes < 8.69388e-05] = 0
+            profile.data["bbp_debubbled_spikes_denoised"] = spikes
+        
         else:
             temporary_df["bbp_minimum_despiked"] = bbp_local_minima
 
@@ -45,7 +48,10 @@ def scatter_conversion_and_despiking(profiles:list, rerun=False) -> list:
 
 
             profile.data["bbp_minimum_despiked"] = profile.data["bbp_minimum_despiked"].interpolate()
-            profile.data["bbp_minimum_spikes"] = profile.data["bbp"] - profile.data["bbp_minimum_despiked"]
+            spikes = profile.data["bbp"] - profile.data["bbp_minimum_despiked"]
+            profile.data["bbp_minimum_spikes"] = spikes
+            spikes[spikes < 8.69388e-05] = 0
+            profile.data["bbp_minimum_spikes_denoised"] = spikes
 
 
         # TODO ADD NOISE FILTERING FROM BRIGGS ET AL 2011

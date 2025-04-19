@@ -59,5 +59,6 @@ ax.set_xlabel("Depth (m)")
 ax.set_ylabel(r"Chlorophyll (mg m$^{-3}$)")
 
 ax2.legend()
-fig.tight_layout()
+ax.grid(alpha=0.5)
+ax2.grid(alpha=0.5)
 plt.savefig("Louis/figures/figureA.png", dpi=300)

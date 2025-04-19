@@ -8,7 +8,7 @@ def default_quenching_correction(profiles:list, despiking_method:str="minimum") 
     night_timings = {}
 
     for i, profile in enumerate(profiles):
-        C_to_B_ratio = profile.data["chlorophyll"] / profile.data[f"bbp_{despiking_method}_despiked"]
+        C_to_B_ratio = profile.data["chlorophyll"] / profile.data[f"bbp_debubbled_despiked"]
         profile.data["CtoB"] = C_to_B_ratio
 
         mixed_layer_df = profile.data[profile.data["depth"] < profile.mld]
@@ -37,7 +37,7 @@ def default_quenching_correction(profiles:list, despiking_method:str="minimum") 
 
 
             chlorophyll = profile.data["chlorophyll"].fillna(0)
-            bbp = profile.data["bbp_debubbled"]
+            bbp = profile.data["bbp_debubbled_despiked"]
             depth = profile.data["depth"]
 
             chlorophyll_corrected = []

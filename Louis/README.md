@@ -153,3 +153,16 @@ ADD CHLOROPHYLL DATA
 
 Alternative method of finding MLD:
 location of the max of the first derivative of density anomaly (within top 300m?)
+
+
+# FIGS
+
+Fig A: Deep Chlorophyll 
+Fig B: MLD
+Fig C: Chlorophyll Quenching
+Fig D: Bbp Despiking
+Fig E: Bbp debubbling and despiking DT Map
+Fig F: Bubble correction + method
+Fig G: Bubble correction deltaBbp result
+Fig H: Chlorophll quenching result DT Map
+Fig I: complete transect C and B with bathymetry

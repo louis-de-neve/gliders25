@@ -7,11 +7,19 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
+from preprocessing.chlorophyll.default_quenching import default_quenching_correction
+#profiles = default_quenching_correction(profiles)
+
+
+#profiles = profiles[90:]
+
 fig = plt.figure(figsize=(8, 8))
 ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
 
+
 night_profiles = []
 day_profiles = []
+
 for p in profiles:
     if not p.night:
         day_profiles.append(p.data)
@@ -31,14 +39,19 @@ night_df = night_df[night_df["depth"] < 1000]
 night_df = night_df[night_df["depth"] > 1]
 
 
-day_df["chlorophyll_corrected"] = day_df["chlorophyll_corrected"].fillna(0)
-night_df["chlorophyll"] = night_df["chlorophyll"].fillna(0)
-day_df["chlorophyll"] = day_df["chlorophyll"].fillna(0)
+#day_df["chlorophyll_corrected"] = day_df["chlorophyll_corrected"].fillna(0)
+#night_df["chlorophyll"] = night_df["chlorophyll"].fillna(0)
+#day_df["chlorophyll"] = day_df["chlorophyll"].fillna(0)
+
+night_df = night_df.dropna(subset=["chlorophyll"])
+day_df = day_df.dropna(subset=["chlorophyll"])
+day_df_c = day_df.dropna(subset=["chlorophyll_corrected"])
+
 
 
 day_mean_values = day_df.groupby("depth")["chlorophyll"].mean().values
 night_mean_values = night_df.groupby("depth")["chlorophyll"].mean().values
-day_corrected_mean_values = day_df.groupby("depth")["chlorophyll_corrected"].mean().values
+day_corrected_mean_values = day_df_c.groupby("depth")["chlorophyll_corrected"].mean().values
 depths = day_df.groupby("depth")["depth"].mean().values
 
 slope, intercept, r1_value, p_value, std_err = linregress(night_mean_values, day_mean_values)
@@ -60,7 +73,7 @@ sns.lineplot(data=day_df,
              color="#920808FF",
              label=rf"Day, Uncorrected: R$^2$ = {r1_value**2:.5f}",)
 
-sns.lineplot(data=day_df,
+sns.lineplot(data=day_df_c,
              ax=ax,
              x="depth",
              y="chlorophyll_corrected",
@@ -73,5 +86,7 @@ ax.set_xlim(0, 125)
 ax.set_xlabel("Depth (m)")
 ax.set_ylabel(r"Chlorophyll (mg m$^{-3}$)")
 ax.legend()
+ax.grid(alpha=0.5)
+
 #fig.tight_layout()
 plt.savefig("Louis/figures/figureC.png", dpi=300)

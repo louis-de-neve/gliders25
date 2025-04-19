@@ -220,8 +220,8 @@ def import_split_and_make_transects(parameters:list[str]|None=["time", "longitud
                     upcasts.append(p)
             profiles=upcasts
 
-        if use_downcasts:
-            profiles.pop(538) # remove bad profiles
+        # if use_downcasts:
+        #     profiles.pop(538) # remove bad profiles
 
 
 
