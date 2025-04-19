@@ -86,7 +86,7 @@ ax2.yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
 ax2.set_xticks(ax2.get_xticks()[::2])
 ax2.set_ylim(-6000, 0)
 
-
+ax2.grid(alpha=0.5)
 
 #fig.tight_layout()
 print(cbar_ax2.get_xticks())
