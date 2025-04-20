@@ -31,6 +31,7 @@ profiles.pop(538)
 
 
 profiles = profiles[489:631]
+print(profiles[0].index, profiles[-1].index)
 
 
 

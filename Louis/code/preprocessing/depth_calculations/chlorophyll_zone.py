@@ -21,7 +21,7 @@ def chlorophyll_zone(profiles:list) -> list:
         c_data_smoothed = list(c_data.rolling(3, min_periods=1).mean())
 
         for i, value in enumerate(c_data_smoothed):
-            if value < 0.01 * chlorophyll95:
+            if value < 0.03 * chlorophyll95:
                 break
         if i * bin_size > 500:
             i = 0

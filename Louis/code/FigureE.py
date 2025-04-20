@@ -16,7 +16,9 @@ ax3: Axes = fig.add_axes([0.50, 0.1, 0.19, 0.8], sharey=ax)
 ax4: Axes = fig.add_axes([0.71, 0.1, 0.19, 0.8], sharey=ax)
 cbar_ax: Axes = fig.add_axes([0.92, 0.1, 0.02, 0.8])
 
-profiles = profiles[544:598]
+profiles.pop(576)
+profiles = profiles[544:597]
+
 
 my_cmap = mpl.colormaps["inferno"].copy()
 

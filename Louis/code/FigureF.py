@@ -8,7 +8,8 @@ from scipy.stats import linregress
 transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 #profiles.pop(243)
-profiles = profiles[544:598]
+profiles.pop(576)
+profiles = profiles[544:59]
 
 fig = plt.figure(figsize=(8, 8))
 ax = fig.add_axes([0.12, 0.5, 0.8, 0.4])

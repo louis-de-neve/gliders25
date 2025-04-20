@@ -62,7 +62,6 @@ ax[0].plot(st, az, color="red")
 
 
 
-
 # AXIS 1
 bath = [p.bathymetry for p in profiles]
 time = [p.start_time for p in profiles]
