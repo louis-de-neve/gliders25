@@ -38,6 +38,8 @@ ax.set_yticklabels([f"{int(abs(label))}" for label in ax.get_yticks()])
 ax.set_ylabel("Depth (m)")
 ax.set_xlabel(r"b$_{bp}$ (m$^{-1}$)")
 ax2.set_xlabel(r"b$_{bp}$ (m$^{-1}$)")
+for axes, label in zip([ax, ax2], ['a', 'b', 'c', 'd']):
+    axes.text(0.96, 0.02, label, transform=axes.transAxes, fontsize=20, va='bottom', ha='right', color="#000000")
 
 ax.grid(alpha=0.5)
 ax2.grid(alpha=0.5)

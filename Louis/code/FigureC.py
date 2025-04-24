@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from scipy.stats import linregress
-transects, profiles = import_split_and_make_transects(use_cache=True,
+transects, profiles = import_split_and_make_transects(use_cache=False,
                                                       use_downcasts=True,)
 
 

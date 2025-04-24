@@ -89,6 +89,11 @@ ax2.set_ylim(-6000, 0)
 
 ax2.grid(alpha=0.5)
 
+for axes, label in zip([ax, ax1, ax2], ['a', 'b', 'c', 'd']):
+    axes.text(0.03, 0.02, label, transform=axes.transAxes, fontsize=20, va='bottom', ha='left', color="#000000")
+
+
+
 #fig.tight_layout()
 print(cbar_ax2.get_xticks())
 plt.savefig("Louis/figures/figureI.png", dpi=300)

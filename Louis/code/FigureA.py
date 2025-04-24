@@ -46,7 +46,8 @@ ax2.plot(c,
 
 
 ax.hlines(c_95, 0, 1000, color="red", linestyles="dashed", label="95% C.I.")
-ax2.hlines(c_95, 0, 1000, color="red", linestyles="dashed", label="95% C.I.")
+ax2.hlines(c_95, 0, 1000, color="red", linestyles="dashed", label="5th Percentile")
+print(c_95)
 
 
 ax.set_xlim(0, 1000)

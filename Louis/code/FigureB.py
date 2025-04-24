@@ -16,7 +16,7 @@ df["depth"] = df["depth"].round(0)
 d = df.groupby("depth")["density_anomaly"].mean()
 
 ax.plot(d,
-         label="Density",
+         label="Density Anomaly",
          color="#000000FF",
          linewidth="2")
 ax.hlines(0.03, 0, 1000, color="red", linestyles="dashed", label=r"$\Delta \rho$ = 0.03")

@@ -146,14 +146,11 @@ this works!
 # TO DO
 
 
-TODO ADD NOISE FILTERING FROM BRIGGS ET AL 2011
-ADD CHLOROPHYLL DATA
+
 
 # Q's
 
-Alternative method of finding MLD:
-location of the max of the first derivative of density anomaly (within top 300m?)
-
+SHOULD I MAKE FIGURE D HORIZONTAL
 
 # FIGS
 

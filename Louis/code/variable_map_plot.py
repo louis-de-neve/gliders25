@@ -15,18 +15,25 @@ transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
                                                                 use_downcasts=True,)
 
 
+for p in all_valid_profiles:
+    spikes = p.apply_binning_to_parameter("bbp_minimum_spikes_denoised", bin_size=1)
+    
+    p.depth_integrated_spikes = np.nansum(spikes, axis=0)/1000
+    p.depth_integrated_spikes = np.where(p.depth_integrated_spikes > 0, p.depth_integrated_spikes, np.nan)
+
+
 def map_plot(profiles:list[Profile], colour_parameter:str, ax:mpl_axes.Axes, variable_limit=None, basemap=None) -> None:
 
         
     longitudes = np.asarray([p.start_location[0] for p in profiles])
     latitudes = np.asarray([p.start_location[1] for p in profiles])
-    colors = np.asarray([p.active_zone for p in profiles])
+    colors = np.asarray([p.mld for p in profiles])
 
 
     
     if basemap != None:
         longitudes, latitudes = basemap(longitudes, latitudes)
-    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="turbo", norm=mpl.colors.Normalize(vmin=100, vmax=250))
+    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="turbo",)# norm=mpl.colors.Normalize(vmin=0, vmax=0.0005))
     return pcm
     
 
@@ -69,7 +76,7 @@ ax[0].set_ylabel("Latitude")
 
 plt.suptitle(r"Biologically active zone map")
 plt.colorbar(pcm, cax=ax[2], orientation="vertical")
-ax[2].set_ylabel(r"Active Zone Depth$ (m)")
+ax[2].set_ylabel(r"Active Zone Depth (m)")
 
 
 
