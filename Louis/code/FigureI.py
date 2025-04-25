@@ -34,6 +34,7 @@ profiles = profiles[489:631]
 print(profiles[0].index, profiles[-1].index)
 
 
+az_depths = [-p.active_zone for p in profiles]
 
 # AXIS 0
 
@@ -58,6 +59,7 @@ cbar_ax2.set_ylabel(r"b$_{bp}$ (m$^{-1}$)")
 
 
 # AXIS 2
+
 bath = [p.bathymetry for p in profiles]
 time = [p.start_time for p in profiles]
 valid_nexts = np.asarray([p.valid_next for p in profiles])
@@ -66,12 +68,21 @@ masks.pop(-1)
 for m in masks:
     times = []
     baths = []
+    az = []
     while len(times) < len(m):
         times.append(time.pop(0))
         baths.append(bath.pop(0))
     times.append(time.pop(0))
     baths.append(bath.pop(0))
     ax2.plot(times, baths, color="black")
+
+
+az_depths = pd.Series([-p.active_zone for p in profiles]).interpolate(method="linear", limit_direction="both")
+ts = [p.start_time + 0.5*(p.end_time-p.start_time) for p in profiles]
+ax.plot(ts, az_depths, color="red", label="High Chlorohyll Zone Depth")
+ax.legend(loc="lower right", fontsize=8, framealpha=1)
+
+
 
 
 ax.set_ylabel("Depth (m)")

@@ -41,7 +41,7 @@ ax.plot(st, pz, color="#000000", label="Photic depth")
 
 
 
-ax.set_ylim(-600, 0)
+ax.set_ylim(-400, 0)
 ax.set_ylabel("Depth (m)")
 ax.set_yticklabels([f"{int(abs(label))}" for label in ax.get_yticks()])
 xticks = ax.get_xticks()
