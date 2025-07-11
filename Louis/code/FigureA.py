@@ -6,9 +6,9 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
-fig = plt.figure(figsize=(8,8))
-ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-ax2 = fig.add_axes([0.4, 0.3, 0.5, 0.6])
+fig = plt.figure(figsize=(6,6))
+ax = fig.add_axes([0.1, 0.1, 0.89, 0.88])
+ax2 = fig.add_axes([0.49, 0.38, 0.5, 0.6])
 
 df = pd.concat([p.data for p in transects[5].get_profiles()])
 

@@ -6,8 +6,8 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+fig = plt.figure(figsize=(6, 6))
+ax = fig.add_axes([0.1, 0.1, 0.87, 0.87])
 
 
 df = pd.concat([p.data for p in profiles])

@@ -4,11 +4,14 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from scipy.stats import linregress
+from preprocessing.bbp.bubble_correction import bubble_correction
 transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_axes([0.12, 0.1, 0.8, 0.8])
+#profiles = bubble_correction(profiles)
+
+fig = plt.figure(figsize=(6, 6))
+ax = fig.add_axes([0.17, 0.1, 0.8, 0.89])
 
 profiles.pop(243)
 profiles = profiles[544:598]

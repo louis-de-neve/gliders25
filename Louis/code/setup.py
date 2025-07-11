@@ -61,13 +61,15 @@ class Profile:
     def __repr__(self) -> str:
         return f"Profile {self.index} from transect {self.transect_index}"
         
-    def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0, max_depth:float=1000.) -> list[float]:
+    def apply_binning_to_parameter(self, parameter:str, bin_size:float=1.0, max_depth:float=1000., returnFreq:bool=False, includeZero:bool=False) -> list[float]:
         bins = np.arange(0, max_depth+bin_size, bin_size)
         d = self.data
         d = d[d["depth"] < max_depth]
         d = d[d["depth"] >= bin_size/2]
-        d[parameter] = d[parameter].replace(0, np.nan)
+        if not includeZero:
+            d[parameter] = d[parameter].replace(0, np.nan)
         binned_data = d.groupby(pd.cut(d["depth"], bins), observed=False)[parameter].mean().reset_index()
+        freq= d.groupby(pd.cut(d["depth"], bins), observed=False)[parameter].size()
         binned_data.columns = ["depth_bin", f"binned_{parameter}"]
         binned_data = list(binned_data[f"binned_{parameter}"].fillna(0))
         if self.data["depth"].max() < max_depth:
@@ -75,6 +77,8 @@ class Profile:
             binned_data = [d if i <= data_max_depth/bin_size else np.nan for i, d in enumerate(binned_data)]
 
         binned_data += [np.nan] * int( max_depth/bin_size - len(binned_data))
+        if returnFreq:
+            return binned_data, freq
         return binned_data
     
     def allocate_profile_to_transect(self, transect_index:int) -> None:
@@ -100,10 +104,12 @@ class Profile:
         return bathymetry
 
 
-def concatenate_profiles(profiles:list[Profile]) -> pd.DataFrame:
+def concatenate_profiles(profiles:list[Profile], giveProfile:bool=False) -> pd.DataFrame:
     p0 = profiles[0]
     for profile in profiles[1:]:
         p0.merge(profile)
+    if giveProfile:
+        return p0
     return p0.data  
 
 

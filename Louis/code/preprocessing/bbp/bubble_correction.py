@@ -13,7 +13,7 @@ def bubble_correction(profiles:list) -> list:
     downcasts = [p for p in profiles if p.direction == "down"]
     upcasts = [p for p in profiles if p.direction == "up"]
     upcast_data = [p.apply_binning_to_parameter("bbp_minimum_despiked", 1, 1000) for p in upcasts]
-    upcast_times_dict = {p.start_time : i for i, p in enumerate(upcasts)}
+    upcast_times_dict = {p.end_time : i for i, p in enumerate(upcasts)}
     ylocs = [0, 10, 20, 30, 50, 80, 120, 160, 990]
     ylocs = np.append(np.arange(0, 170, 10), 990)
     
@@ -31,7 +31,7 @@ def bubble_correction(profiles:list) -> list:
         relative_times = {abs(st - t): i for t, i in upcast_times_dict.items()}
         closest_times = [abs(st - t) for t in upcast_times_dict.keys()]
         closest_times.sort()
-        closest_upcasts_data = [upcast_data[relative_times[t]] for t in closest_times[:6]]
+        closest_upcasts_data = [upcast_data[relative_times[t]] for t in [closest_times[0]]]
         
         mean_of_closests_upcasts = np.nanmean(closest_upcasts_data, axis=0)
         

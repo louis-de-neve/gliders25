@@ -9,11 +9,11 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 #profiles.pop(243)
 profiles.pop(576)
-profiles = profiles[544:59]
+profiles = profiles[544:598]
 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_axes([0.12, 0.5, 0.8, 0.4])
-ax2 = fig.add_axes([0.12, 0.08, 0.8, 0.4], sharex=ax)
+fig = plt.figure(figsize=(6, 8))
+ax = fig.add_axes([0.17, 0.54, 0.8, 0.44])
+ax2 = fig.add_axes([0.17, 0.08, 0.8, 0.44], sharex=ax)
 
 
 up_profiles = [p.data for p in profiles if p.direction == "up"]
@@ -83,6 +83,9 @@ bubble_correction_adjustment = piecewise_function(np.arange(1000), *popt)
 
 ax2.plot(depths, bubble_correction_adjustment, color="red", label="Bubble correction adjustment")
 
+
+for axes, label in zip([ax, ax2], ['a', 'b']):
+    axes.text(0.02, 0.02, label, transform=axes.transAxes, fontsize=20, va='bottom', ha='left', color="#000000")
 
 ax.set_xlim(0, 200)
 

@@ -12,12 +12,16 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
 # profiles = default_quenching_correction(profiles)
 
 
-fig = plt.figure(figsize=(8, 8))
-ax: Axes = fig.add_axes([0.1, 0.62, 0.73, 0.37])
-ax1: Axes = fig.add_axes([0.1, 0.23, 0.73, 0.37], sharex=ax, sharey=ax)
-ax2: Axes = fig.add_axes([0.1, 0.06, 0.73, 0.15], sharex=ax)
-cbar_ax: Axes = fig.add_axes([0.85, 0.62, 0.02, 0.37])
-cbar_ax2: Axes = fig.add_axes([0.85, 0.23, 0.02, 0.37])
+fig = plt.figure(figsize=(10, 7.7))
+ax: Axes = fig.add_axes([0.1, 0.65, 0.35, 0.33])
+axb: Axes = fig.add_axes([0.48, 0.65, 0.35, 0.33])
+axb.invert_xaxis()
+ax1: Axes = fig.add_axes([0.1, 0.29, 0.35, 0.33], sharex=ax, sharey=ax)
+ax1b: Axes = fig.add_axes([0.48, 0.29, 0.35, 0.33], sharex=axb, sharey=axb)
+ax2: Axes = fig.add_axes([0.1, 0.07, 0.35, 0.19], sharex=ax)
+ax2b: Axes = fig.add_axes([0.48, 0.07, 0.35, 0.19], sharex=axb, sharey=ax2)
+cbar_ax: Axes = fig.add_axes([0.85, 0.65, 0.02, 0.33])
+cbar_ax2: Axes = fig.add_axes([0.85, 0.29, 0.02, 0.33])
 profiles.pop(576)
 
 profiles[537].end_time = profiles[538].end_time # PATCH HOLE IN DATA
@@ -27,60 +31,63 @@ profiles.pop(538)
 
 
 
-
-
-
-profiles = profiles[489:631]
+profiles1 = profiles[494:562]
+profiles2 = profiles[562:625]
 print(profiles[0].index, profiles[-1].index)
 
+for profiles, loop_ax, loop_ax1, loop_ax2 in [(profiles1, ax, ax1, ax2), (profiles2, axb, ax1b, ax2b)]:
 
-az_depths = [-p.active_zone for p in profiles]
+    az_depths = [-p.active_zone for p in profiles]
 
-# AXIS 0
+    # AXIS 0
 
-my_cmap = mpl.colormaps["viridis"].copy()
-my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
-my_norm = mpl.colors.LogNorm(vmin=0.015, vmax=2.5, clip=True)
+    my_cmap = mpl.colormaps["viridis"].copy()
+    my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
+    my_norm = mpl.colors.LogNorm(vmin=0.015, vmax=2.5, clip=True)
 
-pcm = new_binned_plot(profiles, ax, "chlorophyll_corrected", 3, 1000, cmap=my_cmap, norm=my_norm)
-c1 = plt.colorbar(pcm, cax=cbar_ax)
-cbar_ax.set_ylabel(r"Chlorophyll (mg m$^{-}$)")
-
-
-my_cmap = mpl.colormaps["inferno"].copy()
-my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
-my_norm = mpl.colors.LogNorm(vmin=0.0004, vmax=0.003, clip=True)
-
-pcm2 = new_binned_plot(profiles, ax1, "bbp_debubbled_despiked", 3, 1000, cmap=my_cmap, norm=my_norm)
-c2 = plt.colorbar(pcm2, cax=cbar_ax2)
-cbar_ax2.set_ylabel(r"b$_{bp}$ (m$^{-1}$)")
+    pcm = new_binned_plot(profiles, loop_ax, "chlorophyll_corrected", 3, 800, cmap=my_cmap, norm=my_norm)
+    c1 = plt.colorbar(pcm, cax=cbar_ax)
+    cbar_ax.set_ylabel(r"Chlorophyll (mg m$^{-}$)")
 
 
+    my_cmap = mpl.colormaps["inferno"].copy()
+    my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
+    my_norm = mpl.colors.LogNorm(vmin=0.0004, vmax=0.003, clip=True)
+
+    pcm2 = new_binned_plot(profiles, loop_ax1, "bbp_debubbled_despiked", 3, 800, cmap=my_cmap, norm=my_norm)
+    c2 = plt.colorbar(pcm2, cax=cbar_ax2)
+    cbar_ax2.set_ylabel(r"b$_{bp}$ (m$^{-1}$)")
 
 
-# AXIS 2
 
-bath = [p.bathymetry for p in profiles]
-time = [p.start_time for p in profiles]
-valid_nexts = np.asarray([p.valid_next for p in profiles])
-masks = "".join(valid_nexts).rsplit("n")
-masks.pop(-1)
-for m in masks:
-    times = []
-    baths = []
-    az = []
-    while len(times) < len(m):
+
+    # AXIS 2
+
+    bath = [p.bathymetry for p in profiles]
+    time = [p.start_time for p in profiles]
+    valid_nexts = np.asarray([p.valid_next for p in profiles])
+    masks = "".join(valid_nexts).rsplit("n")
+    masks.pop(-1)
+    for m in masks:
+        times = []
+        baths = []
+        az = []
+        while len(times) < len(m):
+            times.append(time.pop(0))
+            baths.append(bath.pop(0))
         times.append(time.pop(0))
         baths.append(bath.pop(0))
-    times.append(time.pop(0))
-    baths.append(bath.pop(0))
-    ax2.plot(times, baths, color="black")
+        loop_ax2.plot(times, baths, color="black")
 
 
-az_depths = pd.Series([-p.active_zone for p in profiles]).interpolate(method="linear", limit_direction="both")
-ts = [p.start_time + 0.5*(p.end_time-p.start_time) for p in profiles]
-ax.plot(ts, az_depths, color="red", label="High Chlorohyll Zone Depth")
-ax.legend(loc="lower right", fontsize=8, framealpha=1)
+    az_depths = pd.Series([-p.active_zone for p in profiles]).interpolate(method="linear", limit_direction="both")
+    ts = [p.start_time + 0.5*(p.end_time-p.start_time) for p in profiles]
+    loop_ax.plot(ts, az_depths, color="red", label="High Chlorohyll Zone Depth")
+
+
+
+
+axb.legend(loc="lower right", fontsize=8, framealpha=1)
 
 
 
@@ -89,22 +96,37 @@ ax.set_ylabel("Depth (m)")
 ax1.set_ylabel("Depth (m)")
 plt.setp(ax.get_xticklabels(), visible=False)
 plt.setp(ax1.get_xticklabels(), visible=False)
+plt.setp(axb.get_xticklabels(), visible=False)
+plt.setp(ax1b.get_xticklabels(), visible=False)
+
+plt.setp(axb.get_yticklabels(), visible=False)
+plt.setp(ax1b.get_yticklabels(), visible=False)
+plt.setp(ax2b.get_yticklabels(), visible=False)
+
+
 ax.yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
-ax.set_ylim(-1000, 0)
+ax.set_ylim(-800, 0)
     
-ax2.set_xlabel("Date")
+ax2.set_xlabel("Date", x=1.04)
 ax2.set_ylabel("Ocean Depth (m)")
 ax2.yaxis.set_major_formatter(lambda x, pos: int(abs(x)))
 ax2.set_xticks(ax2.get_xticks()[::2])
+ax2b.set_yticks(ax2.get_yticks())
 ax2.set_ylim(-6000, 0)
 
-ax2.grid(alpha=0.5)
 
-for axes, label in zip([ax, ax1, ax2], ['a', 'b', 'c', 'd']):
-    axes.text(0.03, 0.02, label, transform=axes.transAxes, fontsize=20, va='bottom', ha='left', color="#000000")
+
+ax2.set_xticks([17968, 17970, 17972], ["13/3/19", "15/3/19", "17/3/19"])
+ax2b.set_xticks([17973, 17975, 17977], ["18/3/19", "20/3/19", "22/3/19"])
+
+
+ax2.grid(alpha=0.5)
+ax2b.grid(alpha=0.5)
+
+for axes, label in zip([ax, ax1, ax2, axb, ax1b, ax2b], ['a', 'c', 'e', 'b', 'd', 'f']):
+    axes.text(0.02, 0.02, label, transform=axes.transAxes, fontsize=12, va='bottom', ha='left', color="#000000")
 
 
 
 #fig.tight_layout()
-print(cbar_ax2.get_xticks())
 plt.savefig("Louis/figures/figureI.png", dpi=300)

@@ -12,10 +12,10 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
 # profiles = default_quenching_correction(profiles)
 
 
-fig = plt.figure(figsize=(8, 8))
-ax: Axes = fig.add_axes([0.09, 0.1, 0.35, 0.8])
-ax2: Axes = fig.add_axes([0.48, 0.1, 0.35, 0.8], sharey=ax)
-cbar_ax: Axes = fig.add_axes([0.88, 0.1, 0.02, 0.8])
+fig = plt.figure(figsize=(6, 3))
+ax: Axes = fig.add_axes([0.1, 0.14, 0.35, 0.84])
+ax2: Axes = fig.add_axes([0.49, 0.14, 0.35, 0.84], sharey=ax)
+cbar_ax: Axes = fig.add_axes([0.87, 0.14, 0.02, 0.84])
 profiles.pop(576)
 
 
@@ -39,7 +39,7 @@ times = [p.start_time for p in profiles]
 ax.plot(times, mldmap, color="red", label="MLD", linestyle="dashed", linewidth=1.5)
 ax2.plot(times, mldmap, color="red", label="Mixed Layer Depth", linestyle="dashed", linewidth=1.5)
 
-ax.set_ylim(-500, 0)
+ax.set_ylim(-200, 0)
 ax.set_ylabel("Depth (m)")
 ax.set_yticklabels([f"{int(abs(label))}" for label in ax.get_yticks()])
 ax2.tick_params(axis='y', labelleft=False)
@@ -53,6 +53,6 @@ ax2.legend(loc="lower right", fontsize=8)
 
 plt.colorbar(pcm, cax=cbar_ax, orientation="vertical")
 cbar_ax.set_ylabel(r"Chlorophyll (mg m$^{-3}$)")
-
+ax.set_xlabel("Date", x=1.06)
 #fig.tight_layout()
 plt.savefig("Louis/figures/figureH.png", dpi=300)

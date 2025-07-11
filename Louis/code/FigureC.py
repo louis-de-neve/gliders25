@@ -3,18 +3,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from scipy.stats import linregress
-transects, profiles = import_split_and_make_transects(use_cache=False,
+transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
 from preprocessing.chlorophyll.default_quenching import default_quenching_correction
-#profiles = default_quenching_correction(profiles)
+profiles = default_quenching_correction(profiles)
 
 
 #profiles = profiles[90:]
 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+fig = plt.figure(figsize=(6, 4.5))
+ax = fig.add_axes([0.1, 0.1, 0.88, 0.88])
 
 
 night_profiles = []

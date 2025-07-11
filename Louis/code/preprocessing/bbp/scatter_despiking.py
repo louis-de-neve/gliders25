@@ -1,5 +1,6 @@
 from preprocessing.bbp.beta_to_bbp import beta_to_bbp
 import numpy as np
+from gsw import SA_from_SP, CT_from_t
 
 
 def scatter_conversion_and_despiking(profiles:list, rerun=False) -> list:

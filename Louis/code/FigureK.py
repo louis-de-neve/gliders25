@@ -30,14 +30,14 @@ def map_plot(profiles:list[Profile], colour_parameter:str, ax, variable_limit=No
 
 
 #fig, ax = plt.subplots(2, 1, figsize=(6,6), height_ratios=[1, 0.05])
-fig = plt.figure(figsize=(14,8))
-main_ax = fig.add_axes([0.05, 0.2, 0.4, 0.7])  # [left, bottom, width, height]
+fig = plt.figure(figsize=(12,6))
+main_ax = fig.add_axes([0.05, 0.2, 0.4, 0.79])  # [left, bottom, width, height]
 bottom_ax = fig.add_axes([0.125, 0.1, 0.25, 0.02])  # [left, bottom, width, height]
 side_ax = fig.add_axes([0.92, 0.3, 0.01, 0.5])  # [left, bottom, width, height]
 axes = [main_ax, bottom_ax, side_ax]
 
 # Add second main_ax and bottom_ax
-second_main_ax = fig.add_axes([0.5, 0.2, 0.4, 0.7])  # [left, bottom, width, height]
+second_main_ax = fig.add_axes([0.5, 0.2, 0.4, 0.79])  # [left, bottom, width, height]
 second_bottom_ax = fig.add_axes([0.575, 0.1, 0.25, 0.02])  # [left, bottom, width, height]
 axes.append(second_main_ax)
 axes.append(second_bottom_ax)
