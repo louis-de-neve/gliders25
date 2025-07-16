@@ -8,13 +8,24 @@ from preprocessing.bbp.bubble_correction import bubble_correction
 transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
-#profiles = bubble_correction(profiles)
-
-fig = plt.figure(figsize=(6, 6))
-ax = fig.add_axes([0.17, 0.1, 0.8, 0.89])
-
 profiles.pop(243)
-profiles = profiles[544:598]
+n = 543
+profiles = profiles[n:(n+74)]
+for i, p in enumerate(profiles):
+    p.index = i
+    if "bbp_debubbled_despiked" in p.data.columns:
+        p.data.drop(columns=["bbp_debubbled_despiked"], inplace=True)
+
+width = 10
+print(f"width: {width}")
+profiles = bubble_correction(profiles, width)
+profiles = profiles[10:-10]
+
+
+fig = plt.figure(figsize=(6, 4))
+ax = fig.add_axes([0.17, 0.13, 0.8, 0.85])
+
+
 up = [p.data for p in profiles if p.direction == "up"]
 down  = [p.data for p in profiles if p.direction == "down"]
 
@@ -41,19 +52,26 @@ old_diff = abs(old_diff)
 old_avg = np.mean(old_diff)
 new_avg = np.mean(new_diff)
 
-old_avg_100 = np.mean(old_diff[:100])
-new_avg_100 = np.mean(new_diff[:100])
+top_100 = list(old_diff)[:98]
+new_100 = list(new_diff)[:98]
+
+old_avg_100 = np.mean(top_100)
+new_avg_100 = np.mean(new_100)
+
+improvement100 = old_avg_100 / new_avg_100
+improvement = old_avg / new_avg
+print(f"Improvement {improvement:.2f}, improvement at 100m {improvement100:.2f}")
 
 
-
-ax.plot(old_diff, label="Raw Difference\nmean = {:.2e}\ntop 100 mean: {:.2e}".format(old_avg, old_avg_100), color="#7A0606FF")
-ax.plot(new_diff, label='Debubbled Difference\nmean = {:.2e}\ntop 100 mean: {:.2e}'.format(new_avg, new_avg_100), color="#176304FF")
+ax.set_xscale('log')
+ax.plot(old_diff, label="Uncorrected difference", color="#7A0606FF")
+ax.plot(new_diff, label='Corrected difference', color="#176304FF")
 ax.set_xlabel("Depth (m)")
 ax.set_ylabel(r"|$\Delta b_{bp}$| ($m^{-1}$)")
 ax.legend()
 
-ax.set_xlim(0, 1000)
+ax.set_xlim(10, 1000)
 ax.grid(alpha=0.5)
 
 #fig.tight_layout()
-plt.savefig("Louis/figures/figureG.png", dpi=300)
+#plt.savefig("Louis/figures/figureG.png", dpi=300)

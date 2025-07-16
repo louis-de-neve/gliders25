@@ -54,7 +54,7 @@ x,y = m(*np.meshgrid(x,y))
 
 original_cmap = mpl.colormaps["gist_gray"]
 colors = original_cmap(np.arange(original_cmap.N))
-#colors[:, -1] = 0.8  # Set alpha
+colors[:, -1] = 0.6  # Set alpha
 modified_cmap = ListedColormap(colors, "modified_cmap")
 bmp = m.contourf(x, y, Z, cmap=modified_cmap)
 
@@ -68,7 +68,7 @@ m2 = Basemap(llcrnrlon=-40,llcrnrlat=-62.0,urcrnrlon=-34,urcrnrlat=-59.0,
 
 original_cmap = mpl.colormaps["gist_gray"]
 colors = original_cmap(np.arange(original_cmap.N))
-#colors[:, -1] = 0.8  # Set alpha
+colors[:, -1] = 0.6  # Set alpha
 modified_cmap = ListedColormap(colors, "modified_cmap")
 bmp = m2.contourf(x, y, Z, cmap=modified_cmap)
 

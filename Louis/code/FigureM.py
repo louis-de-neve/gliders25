@@ -23,8 +23,8 @@ profiles[537].end_time = profiles[538].end_time # PATCH HOLE IN DATA
 profiles[540].start_time = profiles[539].start_time
 profiles.pop(539)
 profiles.pop(538)
-profiles1 = profiles[494:562]
-profiles2 = profiles[562:631]
+profiles1 = [p for p in profiles if p.index >= 495 and p.index < 565]
+profiles2 = [p for p in profiles if p.index >= 565 and p.index < 631]
 
 my_cmap = mpl.colormaps["viridis"].copy()
 my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))

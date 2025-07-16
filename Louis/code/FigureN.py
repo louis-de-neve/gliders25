@@ -18,74 +18,41 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
 def map_plot(profiles:list[Profile], ax, basemap=None) -> None:
 
     profiles.pop(576)
+    #profiles = [p for p in profiles if p.direction == "up"]
     
+    def lineplots(profiles, color, width, start, stop):
+        normal_profiles = [p for p in profiles if p.index < stop and p.index >= start]
+        lon, lat = basemap([p.start_location[0] for p in normal_profiles],
+                           [p.start_location[1] for p in normal_profiles])
+        plot_obj, = ax.plot(lon, lat, color=color, linewidth=width, zorder=2)
+        return plot_obj
 
-    for p in profiles:
-        c = "#21D302FF"
-        if p.index < 566 and p.index >= 490:
-            c = "#F00000FF" # T1
-        if p.index < 635 and p.index >= 566:
-            c = "#2400F0FF" # T2
-        
-        lon, lat = basemap(p.start_location[0], p.start_location[1])
+    ref_start = 710
+    ref_end = 760
 
-        if p.index == 560:
-            z1 = ax.scatter(lon, lat, c=c,
-                            marker="o",
-                            s=80,
-                            edgecolor="black",
-                            linewidth=0.3,
-                            alpha=0.8,)
-            
-        
-        if p.index == 570:
-            z2 = ax.scatter(lon, lat, c=c,
-                            marker="o",
-                            s=80,
-                            edgecolor="black",
-                            linewidth=0.3,
-                            alpha=0.8,)
-            
-        else:
-            z0 = ax.scatter(lon, lat, c=c,
-                            marker="o",
-                            s=80,
-                            edgecolor="black",
-                            linewidth=0.3,
-                            alpha=0.8)
-        
-        
-        
-        if p.index < 599 and p.index >= 545:    
-            c2 = "#00DEF2FF" # T3
 
-            if p.index == 560:
-                z1a = ax.scatter(lon, lat, c=c2,
-                                marker="o",
-                                s=60,
-                                edgecolor=c,
-                                linewidth=1,
-                                alpha=0.9,)
 
-            else:
-                z2a = ax.scatter(lon, lat, c=c2,
-                                marker="o",
-                                s=60,
-                                edgecolor=c,
-                                linewidth=1,
-                                alpha=0.9,)
+    normal_points = lineplots(profiles, "#000000FF", 3, 0, 495)
+    t1_interior = lineplots(profiles, "#F00000FF", 3, 495, 550)
+    t1_exterior = lineplots(profiles, "#0050F0FF", 3, 550, 565)
+    t2_exterior = lineplots(profiles, "#43AFF3FF", 3, 565, 580)
+    t2_interior = lineplots(profiles, "#F88737FF", 3, 580, 631)
+    normal_points = lineplots(profiles, "#000000FF", 3, 631, ref_start)
+    reference = lineplots(profiles, "#0EAB0EFF", 3, ref_start, ref_end)
+    normal_points = lineplots(profiles, "#000000FF", 3, ref_end, 900)
 
-    return z0, z1, z2, z1a, z2a
+    
+    return normal_points, t1_interior, t1_exterior, t2_exterior, t2_interior, reference
     
 
 
 
 
 #fig, ax = plt.subplots(2, 1, figsize=(6,6), height_ratios=[1, 0.05])
-fig = plt.figure(figsize=(7, 12))
-additional_ax = fig.add_axes([0.035, 0.51, 0.91, 0.46])  # [left, bottom, width, height]
-main_ax = fig.add_axes([0.035, 0.05, 0.82, 0.42])  # [left, bottom, width, height]
-side_ax = fig.add_axes([0.86, 0.05, 0.02, 0.42])  # [left, bottom, width, height]
+fig = plt.figure(figsize=(12, 6))  # Landscape orientation
+additional_ax = fig.add_axes([0.03, 0.1, 0.4, 0.8])  # Additional map on the right
+main_ax = fig.add_axes([0.48, 0.1, 0.4, 0.8])      # Main map on the left
+side_ax = fig.add_axes([0.92, 0.1, 0.02, 0.8])     # Colorbar next to main map
 #side_ax = fig.add_axes([0.08, 0.05, 0.02, 0.42])  # [left, bottom, width, height]
 axes = [main_ax, side_ax]
 
@@ -104,7 +71,7 @@ x,y = m(*np.meshgrid(x,y))
 
 original_cmap = mpl.colormaps["gist_gray"]
 colors = original_cmap(np.arange(original_cmap.N))
-colors[:, -1] = 0.8  # Set alpha
+colors[:, -1] = 0.6  # Set alpha
 modified_cmap = ListedColormap(colors, "modified_cmap")
 bmp = m.contourf(x, y, Z, cmap=modified_cmap)
 
@@ -119,15 +86,10 @@ m2.plot([-34, -34, -40, -40, -34], [-62.0, -59.0, -59.0, -62.0, -62.0], color='r
 #additional_ax.legend(loc='lower left')
 x2, y2 = -34, -61.5
 xpt, ypt = m2(x2, y2)
-# Add a white box behind the text
-box_width, box_height = 3200000, 350000  # Adjust box size as needed
-box = FancyBboxPatch((xpt - 1600000 - box_width / 2, ypt - 400000 - box_height / 2),
-                     box_width, box_height,
-                     boxstyle="round,pad=0.3", edgecolor="none", facecolor="white", alpha=0.8)
-additional_ax.add_patch(box)
 
 # Add the text on top of the box
-additional_ax.text(xpt - 1600000, ypt - 400000, "Region enlarged below", fontsize=10, color="red", fontweight="bold", ha="center", va="center")
+additional_ax.text(xpt - 1600000, ypt - 400000, "Region enlarged", fontsize=10, color="red", fontweight="bold", ha="center", va="center",
+                   bbox=dict(facecolor='white', alpha=0.9, linewidth=0.5, pad=4))
 
 
 
@@ -138,8 +100,10 @@ end_profile = profiles[-1]
 start_lon, start_lat = m(start_profile.start_location[0], start_profile.start_location[1])
 end_lon, end_lat = m(end_profile.start_location[0], end_profile.start_location[1])
 print(start_lon, start_lat)
-axes[0].text(start_lon, start_lat + 10000, "Start", fontsize=10, color="red", fontweight="bold", ha="center", va="center")
-axes[0].text(end_lon, end_lat - 10000, "End", fontsize=10, color="red", fontweight="bold", ha="center", va="center")
+axes[0].text(start_lon, start_lat + 10000, "Start", fontsize=10, color="red", fontweight="bold", ha="center", va="center", 
+             bbox=dict(facecolor='white', alpha=0.9, linewidth=0.5, pad=4))
+axes[0].text(end_lon, end_lat - 10000, "End", fontsize=10, color="red", fontweight="bold", ha="center", va="center", 
+             bbox=dict(facecolor='white', alpha=0.9, linewidth=0.5, pad=4))
 
 m.fillcontinents(color='grey')
 m.drawparallels(np.arange(-65,-50,1), labels=[1,0,0,0])
@@ -147,11 +111,13 @@ m.drawmeridians(np.arange(-40, -30, 1), labels=[0,0,0,1])
 
 
 
-z0, z1, z2, z1a, z2a = map_plot(profiles, axes[0], basemap=m)
+normal_points, t1_interior, t1_exterior, t2_exterior, t2_interior, reference = map_plot(profiles, axes[0], basemap=m)
 
+# axes[0].legend([normal_points], ["track"])
 
-
-
+axes[0].legend([normal_points, (t1_interior, t1_exterior), (t2_interior, t2_exterior), reference],
+               ['Glider 631 path', 'Transect 1', 'Transect 2', 'Reference transect'],
+               loc='upper left', handler_map={tuple: HandlerTuple(ndivide=None)})
 
 
 axes[0].set_xlabel("Longitude", labelpad=15)
@@ -165,8 +131,6 @@ xticks = axes[1].get_yticks()
 axes[1].set_yticklabels([int(abs(tick)) for tick in xticks])
 
 
-axes[0].legend([z0, z1, z2, (z1a, z2a)], ['Glider 631 Track', 'Transect 1', 'Transect 2', 'Transect 3'],
-               loc='upper left', handler_map={tuple: HandlerTuple(ndivide=None)})
 
 #fig.tight_layout()
 plt.savefig("Louis/figures/figureN.png", dpi=300)

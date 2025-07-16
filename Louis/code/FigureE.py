@@ -9,12 +9,12 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
-fig = plt.figure(figsize=(12, 11))
-ax: Axes = fig.add_axes([0.06, 0.06, 0.19, 0.92])
-ax2: Axes = fig.add_axes([0.27, 0.06, 0.19, 0.92], sharey=ax)
-ax3: Axes = fig.add_axes([0.48, 0.06, 0.19, 0.92], sharey=ax)
-ax4: Axes = fig.add_axes([0.69, 0.06, 0.19, 0.92], sharey=ax)
-cbar_ax: Axes = fig.add_axes([0.9, 0.06, 0.02, 0.92])
+fig = plt.figure(figsize=(12, 5))
+ax: Axes = fig.add_axes([0.06, 0.09, 0.19, 0.88])
+ax2: Axes = fig.add_axes([0.27, 0.09, 0.19, 0.88], sharey=ax)
+ax3: Axes = fig.add_axes([0.48, 0.09, 0.19, 0.88], sharey=ax)
+ax4: Axes = fig.add_axes([0.69, 0.09, 0.19, 0.88], sharey=ax)
+cbar_ax: Axes = fig.add_axes([0.9, 0.09, 0.02, 0.88])
 
 profiles.pop(576)
 profiles = profiles[544:597]
@@ -25,11 +25,11 @@ my_cmap = mpl.colormaps["inferno"].copy()
 my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
 my_norm = mpl.colors.LogNorm(vmin=0.0004, vmax=0.003, clip=True)
 
-
-pcm = new_binned_plot(profiles, ax, "bbp", cmap=my_cmap, norm=my_norm, max_depth=500)
-pcm = new_binned_plot(profiles, ax2, "bbp_minimum_despiked", cmap=my_cmap, norm=my_norm, max_depth=500)
-pcm = new_binned_plot(profiles, ax3, "bbp_debubbled_despiked", cmap=my_cmap, norm=my_norm, max_depth=500)
-pcm = new_binned_plot(profiles, ax4, "bbp_debubbled_spikes_denoised", cmap=my_cmap, norm=my_norm, max_depth=500)
+md = 180
+pcm = new_binned_plot(profiles, ax, "bbp", cmap=my_cmap, norm=my_norm, max_depth=md)
+pcm = new_binned_plot(profiles, ax2, "bbp_minimum_despiked", cmap=my_cmap, norm=my_norm, max_depth=md)
+pcm = new_binned_plot(profiles, ax3, "bbp_debubbled_despiked", cmap=my_cmap, norm=my_norm, max_depth=md)
+pcm = new_binned_plot(profiles, ax4, "bbp_debubbled_spikes_denoised", cmap=my_cmap, norm=my_norm, max_depth=md)
 
 for axes, label in zip([ax, ax2, ax3, ax4], ['a', 'b', 'c', 'd']):
     axes.text(0.04, 0.02, label, transform=axes.transAxes, fontsize=20, va='bottom', ha='left', color="#40FF00FF")

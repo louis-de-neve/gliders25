@@ -31,9 +31,20 @@ profiles.pop(538)
 
 
 
-profiles1 = profiles[494:562]
-profiles2 = profiles[562:625]
-print(profiles[0].index, profiles[-1].index)
+profiles1 = [p for p in profiles if p.index >= 495 and p.index < 565]
+profiles2 = [p for p in profiles if p.index >= 565 and p.index < 631]
+
+interior1 = [p for p in profiles if p.index >= 495 and p.index < 550]
+interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
+exterior1 = [p for p in profiles if p.index >= 550 and p.index < 565]
+exterior2 = [p for p in profiles if p.index >= 565 and p.index < 580]
+exterior = exterior1 + exterior2
+interior = interior1 + interior2
+
+
+
+
+
 
 for profiles, loop_ax, loop_ax1, loop_ax2 in [(profiles1, ax, ax1, ax2), (profiles2, axb, ax1b, ax2b)]:
 

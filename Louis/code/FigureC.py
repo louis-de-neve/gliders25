@@ -14,7 +14,7 @@ profiles = default_quenching_correction(profiles)
 #profiles = profiles[90:]
 
 fig = plt.figure(figsize=(6, 4.5))
-ax = fig.add_axes([0.1, 0.1, 0.88, 0.88])
+ax = fig.add_axes([0.11, 0.1, 0.87, 0.88])
 
 
 night_profiles = []
@@ -71,17 +71,19 @@ sns.lineplot(data=day_df,
              x="depth",
              y="chlorophyll",
              color="#920808FF",
-             label=rf"Day, Uncorrected: R$^2$ = {r1_value**2:.5f}",)
+             label=rf"Day, Uncorrected",)
 
 sns.lineplot(data=day_df_c,
              ax=ax,
              x="depth",
              y="chlorophyll_corrected",
              color="#045613FF",
-             label=rf"Day, Corrected: R$^2$ = {r2_value**2:.5f}",)
+             label=rf"Day, Corrected",)
 
 
-ax.set_xlim(0, 125)
+ax.set_xlim(0, 80)
+ax.set_ylim(0.8, 2.7)
+ax.set_yticks([1, 1.5, 2, 2.5])
 
 ax.set_xlabel("Depth (m)")
 ax.set_ylabel(r"Chlorophyll (mg m$^{-3}$)")
