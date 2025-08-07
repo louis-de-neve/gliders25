@@ -21,9 +21,9 @@ profiles1 = [p for p in profiles if p.index >= 495 and p.index < 565]
 profiles2 = [p for p in profiles if p.index >= 565 and p.index < 631]
 
 interior1 = [p for p in profiles if p.index >= 495 and p.index < 550]
-interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
 exterior1 = [p for p in profiles if p.index >= 550 and p.index < 565]
 exterior2 = [p for p in profiles if p.index >= 565 and p.index < 580]
+interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
 exterior = exterior1 + exterior2
 interior = interior1 + interior2
 
@@ -48,7 +48,7 @@ labels = ["Interior", "Exterior", "Reference"]
 labels = [1, 2, 3]
 means = [np.nanmean(m) for m in mean_depth_integrated_between_100_and_900m]
 stds = [np.nanstd(m) for m in mean_depth_integrated_between_100_and_900m]
-
+print(means)
 dfs = [pd.DataFrame({"datapoints": ys, "label": label, "split":True}) for ys, label in zip(mean_depth_integrated_between_100_and_900m, labels)]
 df = pd.concat(dfs)
 extra_df = pd.DataFrame({"datapoints": -1, "label": [1, 2, 3], "split": False})
@@ -98,7 +98,7 @@ ax.set_xlim(-0.6,2.5)
 #sns.stripplot(data=df, ax=ax, x="label", y="datapoints", color="black", size=2, jitter=True)
 #bplot = sns.kdeplot(data=df, ax=ax, x="label", y="datapoints", palette="Set2")
 ax.set_ylabel("Depth Integrated Backscatter from spikes (m$^{-1}$ m)")
-ax.set_xticks([0, 1, 2], ["Interior", "Exterior", "Reference"])
+ax.set_xticks([0, 1, 2], ["Interior", "Edge", "Reference"])
 fig.tight_layout()
 plt.savefig("Louis/figures/depth_integration_box_plot.png", dpi=300)
 #plt.show()

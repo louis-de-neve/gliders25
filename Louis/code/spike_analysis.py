@@ -77,19 +77,32 @@ ref = [p for p in profiles if p.index >= 710 and p.index < 760]
 
 
 
-interior_profile = concatenate_profiles(interior, giveProfile=True)
+interior_profile:Profile = concatenate_profiles(interior, giveProfile=True)
 exterior_profile = concatenate_profiles(exterior, giveProfile=True)
 ref_profile = concatenate_profiles(ref, giveProfile=True)
+
+
+i = interior_profile.data
+e = exterior_profile.data
+
+i = i[i["depth"] >= 200]
+i = i[i["depth"] <= 250]
+
+
+e = e[e["depth"] >= 200]
+e = e[e["depth"] <= 250]
+
+
 
 binsize = 50
 d = np.arange(0, 1000, binsize)
 
-ip = interior_profile.apply_binning_to_parameter("bbp_debubbled_spikes_denoised", bin_size=binsize, max_depth=1000, includeZero=True)
-ep = exterior_profile.apply_binning_to_parameter("bbp_debubbled_spikes_denoised", bin_size=binsize, max_depth=1000, includeZero=True)
+ip = interior_profile.apply_binning_to_parameter("bbp_debubbled_spikes_denoised", bin_size=binsize, max_depth=1000, includeZero=True,)
+ep = exterior_profile.apply_binning_to_parameter("bbp_debubbled_spikes_denoised", bin_size=binsize, max_depth=1000, includeZero=True,)
 re = ref_profile.apply_binning_to_parameter("bbp_minimum_spikes_denoised", bin_size=binsize, max_depth=1000, includeZero=True)
 
 
-print(ip[2], ep[2])
+print(ip[4], ep[4])
 
 ratio = np.asarray(ip)/np.asarray(ep)
 mean_ratio = np.nanmean(ratio)

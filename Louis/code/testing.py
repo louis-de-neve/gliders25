@@ -1,55 +1,65 @@
-widths = [4, 6, 8, 10, 12, 14, 16]
-result_dict = {n: [] for n in widths}
-print(result_dict)
+from setup import import_split_and_make_transects, Profile, Transect
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from matplotlib.colors import ListedColormap
+import matplotlib.colors as mcolors
+import xarray as xr
+from mpl_toolkits.basemap import Basemap
+import matplotlib as mpl
+from scipy.stats import linregress
+from matplotlib.legend_handler import HandlerTuple
+from matplotlib.patches import FancyBboxPatch
+import cmocean
+import cmweather
+import xlrd
+import cmcrameri.cm as cmc
+
+transects, profiles = import_split_and_make_transects(use_cache=True,
+                                                      use_downcasts=True,)
 
 
-result_dict[8].append(5.83)
-
-print(result_dict)
-
-
-
-
-# from setup import import_split_and_make_transects, Profile, Transect
-# import matplotlib.pyplot as plt
-# import numpy as np
-# import pandas as pd
-# import matplotlib as mpl
-# from matplotlib.axes import Axes
-# from plotting_functions import new_binned_plot
-# transects, profiles = import_split_and_make_transects(use_cache=True,
-#                                                       use_downcasts=True,)
-
-# # from preprocessing.chlorophyll.default_quenching import default_quenching_correction
-# # profiles = default_quenching_correction(profiles)
-# fig, axs = plt.subplots(ncols=2, figsize=(10, 10))
-
-# profiles.pop(576)
-# profiles[537].end_time = profiles[538].end_time # PATCH HOLE IN DATA
-# profiles[540].start_time = profiles[539].start_time
-# profiles.pop(539)
-# profiles.pop(538)
-
-
-
-# profiles1 = profiles[494:562]
-# profiles2 = profiles[562:625]
-
-# interior = profiles1[:-20] + profiles2[15:]
-# exterior = profiles1[-20:] + profiles2[:15]
+def make_cmap(cmi):
+    cmap = mpl.colormaps['CM_rhohv_r']
+    cmap = cmocean.tools.crop_by_percent(cmap, 8, 'max')
+    cmap_rgba = cmap(np.linspace(0, 1, abs(cmin)))
+    cmap_rgba[:, 3] = 1  # set alpha to 1
+    mymap = mcolors.LinearSegmentedColormap.from_list('my_colormap', cmap_rgba)
+    return mymap
 
 
 
-# print(profiles[0].index, profiles[-1].index)
+cmin, cmax = -8000, 0
+cmap = make_cmap(cmin)
 
-# az_depths = [-p.active_zone for p in profiles]
 
-# # AXIS 0
+#fig, ax = plt.subplots(2, 1, figsize=(6,6), height_ratios=[1, 0.05])
+fig = plt.figure(figsize=(13, 6))  # Landscape orientation
+main_ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])      # Main map on the right
 
-# my_cmap = mpl.colormaps["viridis"].copy()
-# my_cmap.set_extremes(over=(0,0,0), under=(1,1,1))
-# my_norm = mpl.colors.LogNorm(vmin=0.015, vmax=2.5, clip=True)
 
-# pcm = new_binned_plot(interior, axs[0], "chlorophyll_corrected", 3, 800, cmap=my_cmap, norm=my_norm)
-# pcm = new_binned_plot(exterior, axs[1], "chlorophyll_corrected", 3, 800, cmap=my_cmap, norm=my_norm)
-# plt.show()
+# Load data
+dataset = xr.open_dataset('Louis/data/gebco_2024_n-55.0_s-65.0_w-40.0_e-32.0.nc', engine="netcdf4")
+
+x = dataset.variables['lon']
+y = np.asarray(dataset.variables['lat'])
+Z = np.asarray(dataset.variables['elevation'])
+m = Basemap(llcrnrlon=-40,llcrnrlat=-62.0,urcrnrlon=-34,urcrnrlat=-59.0,
+            resolution='i',projection='merc',lon_0=-15.0,lat_0=55.0, ax=main_ax)
+
+
+
+x,y = m(*np.meshgrid(x,y))
+bmp = m.pcolormesh(x, y, Z, cmap=cmap, vmin=cmin, vmax=cmax)
+
+
+contour = m.contour(x, y, Z, levels=[-3100], colors='#00000000', ax=main_ax)
+vs = (contour.collections[0].get_paths()[0].vertices)
+vs = vs[4970:8910]
+plt.plot(vs[:, 0], vs[:, 1], c="black", linestyle="dashed")
+
+
+
+plt.show()
+

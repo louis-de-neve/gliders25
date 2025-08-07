@@ -1,29 +1,47 @@
 from setup import import_split_and_make_transects, Profile, Transect
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import matplotlib as mpl
 transects, profiles = import_split_and_make_transects(use_cache=True,
                                                       use_downcasts=True,)
 
 
 fig = plt.figure(figsize=(6, 6))
-ax = fig.add_axes([0.1, 0.1, 0.87, 0.87])
+ax = fig.add_axes([0.11, 0.1, 0.86, 0.87])
 
 
-df = pd.concat([p.data for p in profiles])
-df = profiles[300].data
-df["depth"] = df["depth"].round(0)
-d = df.groupby("depth")["density_anomaly"].mean()
+#a, b, c = 530, 563, 750
+a, b, c = 591, 563, 754
 
-ax.plot(d,
-         label="Density Anomaly",
-         color="#000000FF",
-         linewidth="2")
+profiles_to_plot = []
+
+profiles_to_plot.append((profiles[a], "Interior", "#FF0000FF"))
+profiles_to_plot.append((profiles[b], "Edge", "#3A9CF1FF"))
+profiles_to_plot.append((profiles[c], "Reference", "#3FD057FF"))
+
+# Create a quantized colormap with 30 colors
+# cmap = mpl.cm.get_cmap('hsv', 30)
+# colors = [mpl.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+# profiles_to_plot = []
+# for i, p in enumerate(profiles[549:580]):
+#     profiles_to_plot.append((p, f"Profile {i}", colors[i % 30]))
+
+
+
+for profile, label, color in profiles_to_plot:
+    df = profile.data
+    df["depth"] = df["depth"].round(0)
+    d = df.groupby("depth")["density_anomaly"].mean()
+
+    ax.plot(d,
+            label=label,
+            color=color,
+            linewidth="2")
 ax.hlines(0.03, 0, 1000, color="red", linestyles="dashed", label=r"$\Delta \rho$ = 0.03")
 
 
-ax.set_xlim(0, 100)
-ax.set_ylim(ax.get_ylim()[0], 0.5)
+ax.set_xlim(0, 120)
+ax.set_ylim(-0.01, 0.1)
 ax.set_xlabel("Depth (m)")
 ax.set_ylabel(r"Density Anomaly, $\Delta \rho$ (kg m$^{-3}$)")
 ax.legend(loc="upper left")

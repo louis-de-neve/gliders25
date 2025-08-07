@@ -17,10 +17,10 @@ transects, all_valid_profiles = import_split_and_make_transects(use_cache=True,
 def map_plot(profiles:list[Profile], colour_parameter:str, ax:mpl_axes.Axes, variable_limit=None, basemap=None) -> None:
     longitudes, latitudes, hues, all_hues = [], [], [], []
     for p in profiles:
-        if p.direction == "up" and p.data["depth"].max() >= 500:
+        if p.data["depth"].max() >= 300 and p.index >= 440 and p.index <= 690:
             data = p.data.sort_values("depth")
-            data = data[data["depth"] > 1]
-            data = data[data["depth"] <= 500]
+            data = data[data["depth"] > 200]
+            data = data[data["depth"] <= 800]
 
             if variable_limit is not None:
                 data = variable_limit(p, data)
@@ -31,8 +31,8 @@ def map_plot(profiles:list[Profile], colour_parameter:str, ax:mpl_axes.Axes, var
             integral = np.trapezoid(ys, x=xs)
 
             if integral > .00001:
-                hues.append(data[colour_parameter].mean()) # METHOD FOR BBP ONLY
-                #hues.append(integral) # CHLORPHYLL METHOD
+                #hues.append(data[colour_parameter].mean()) # METHOD FOR BBP ONLY
+                hues.append(integral/len(ys)) # CHLORPHYLL METHOD
                 longitudes.append(p.start_location[0])
                 latitudes.append(p.start_location[1])
             all_hues.append(integral)
@@ -42,7 +42,7 @@ def map_plot(profiles:list[Profile], colour_parameter:str, ax:mpl_axes.Axes, var
     
     if basemap != None:
         longitudes, latitudes = basemap(longitudes, latitudes)
-    pcm = ax.scatter(longitudes, latitudes, c=hues, cmap="inferno", norm=mpl.colors.Normalize(vmin=0.0005, vmax=0.0025))
+    pcm = ax.scatter(longitudes, latitudes, c=hues, cmap="inferno",)# norm=mpl.colors.Normalize(vmin=0.0005, vmax=0.0025))
     return pcm, all_hues
     
 def above_photic_limit(p:Profile, d:pd.DataFrame) -> float:
@@ -85,7 +85,7 @@ m.drawmeridians(np.arange(-40, -30, 1), labels=[0,0,0,1])
 
 
 
-pcm, hues = map_plot(all_valid_profiles, "bbp_minimum_despiked", ax[0], variable_limit=None, basemap=m)
+pcm, hues = map_plot(all_valid_profiles, "bbp_debubbled_spikes_denoised", ax[0], variable_limit=None, basemap=m)
 #pcm, hues_above = map_plot(all_valid_profiles, "chlorophyll_corrected", ax[0], variable_limit=above_photic_limit, basemap=m)
 #pcm, hues_below = map_plot(all_valid_profiles, "chlorophyll_corrected", ax[0], variable_limit=below_photic_limit, basemap=m)
 ax[0].set_xlabel("Longitude", labelpad=15)
@@ -117,7 +117,7 @@ ax[1].set_xticklabels([int(abs(tick)) for tick in xticks])
 
 #plt.tight_layout()
 plt.savefig("Louis/outputs/map_plot_bbp.png", dpi=300)
-plt.show()
+#plt.show()
 
 
 

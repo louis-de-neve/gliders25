@@ -22,7 +22,7 @@ def map_plot(profiles:list[Profile], colour_parameter:str, ax, variable_limit=No
     
     if basemap != None:
         longitudes, latitudes = basemap(longitudes, latitudes)
-    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="viridis", norm=mpl.colors.Normalize(vmin=100, vmax=200))
+    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="viridis", norm=mpl.colors.Normalize(vmin=100, vmax=200), zorder=2)
     return pcm
     
 
@@ -57,6 +57,10 @@ colors = original_cmap(np.arange(original_cmap.N))
 colors[:, -1] = 0.6  # Set alpha
 modified_cmap = ListedColormap(colors, "modified_cmap")
 bmp = m.contourf(x, y, Z, cmap=modified_cmap)
+contour = m.contour(x, y, Z, levels=[-3000], colors='#00000000', ax=main_ax)
+vs = (contour.collections[0].get_paths()[0].vertices)
+vs = vs[4970:8910]
+contour_line = axes[0].plot(vs[:, 0], vs[:, 1], c="#575757", linestyle="dashed", label="3000 m isobath")
 
 ###
 
@@ -71,6 +75,10 @@ colors = original_cmap(np.arange(original_cmap.N))
 colors[:, -1] = 0.6  # Set alpha
 modified_cmap = ListedColormap(colors, "modified_cmap")
 bmp = m2.contourf(x, y, Z, cmap=modified_cmap)
+contour = m2.contour(x, y, Z, levels=[-3000], colors='#00000000', ax=axes[3])
+vs = (contour.collections[0].get_paths()[0].vertices)
+vs = vs[4970:8910]
+contour_line = axes[3].plot(vs[:, 0], vs[:, 1], c="#575757", linestyle="dashed", label="3000 m isobath")
 
 ###
 
@@ -117,7 +125,7 @@ def map_plot2(profiles:list[Profile], colour_parameter:str, ax, variable_limit=N
     
     if basemap != None:
         longitudes, latitudes = basemap(longitudes, latitudes)
-    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="magma", norm=mpl.colors.Normalize(vmin=30, vmax=130))
+    pcm = ax.scatter(longitudes, latitudes, c=colors, s=15, cmap="magma", norm=mpl.colors.Normalize(vmin=30, vmax=130), zorder=2)
     return pcm
     
 

@@ -127,4 +127,4 @@ for axes, label in zip([ax, ax2], ['a', 'b', 'c', 'd']):
 ax.set_ylabel(r"Spike $b_{bp}$ ($10^{-4}$ m$^{-1}$)")
 ax.set_yticks(np.arange(0, 0.0007, 0.0001), np.arange(0, 7, 1))
 fig.tight_layout()
-plt.savefig("Louis/figures/taylor_column_spike_chlor.png", dpi=300)
+plt.savefig("Louis/figures/taylor_column_spike_bbp.png", dpi=300)
