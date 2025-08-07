@@ -26,9 +26,9 @@ profiles.pop(538)
 profiles = [p for p in profiles if p.index != 614]
 profiles1 = [p for p in profiles if p.index >= 495 and p.index < 565]
 profiles2 = [p for p in profiles if p.index >= 565 and p.index < 631]
-interior1 = [p for p in profiles if p.index >= 495 and p.index < 550]
+interior1 = [p for p in profiles if p.index >= 495 and p.index < 546]
 interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
-exterior1 = [p for p in profiles if p.index >= 550 and p.index < 565]
+exterior1 = [p for p in profiles if p.index >= 546 and p.index < 565]
 exterior2 = [p for p in profiles if p.index >= 565 and p.index < 580]
 exterior = exterior1 + exterior2
 interior = interior1 + interior2

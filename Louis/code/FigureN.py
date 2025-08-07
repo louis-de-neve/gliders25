@@ -38,8 +38,8 @@ def map_plot(profiles:list[Profile], ax, basemap=None) -> None:
 
 
     normal_points = lineplots(profiles, "#000000FF", 3, 0, 495)
-    t1_interior = lineplots(profiles, "#F00000FF", 3, 495, 550)
-    t1_exterior = lineplots(profiles, "#0050F0FF", 3, 550, 565)
+    t1_interior = lineplots(profiles, "#F00000FF", 3, 495, 546)
+    t1_exterior = lineplots(profiles, "#0050F0FF", 3, 546, 565)
     t2_exterior = lineplots(profiles, "#43AFF3FF", 3, 565, 580)
     t2_interior = lineplots(profiles, "#F88737FF", 3, 580, 631)
     normal_points = lineplots(profiles, "#000000FF", 3, 631, ref_start)

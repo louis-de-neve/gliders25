@@ -35,9 +35,9 @@ profiles1 = [p for p in profiles if p.index >= 495 and p.index < 565]
 profiles2 = [p for p in profiles if p.index >= 565 and p.index < 631]
 
 interior1 = [p for p in profiles if p.index >= 495 and p.index < 550]
-interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
 exterior1 = [p for p in profiles if p.index >= 550 and p.index < 565]
 exterior2 = [p for p in profiles if p.index >= 565 and p.index < 580]
+interior2 = [p for p in profiles if p.index >= 580 and p.index < 631]
 exterior = exterior1 + exterior2
 interior = interior1 + interior2
 
@@ -132,11 +132,11 @@ ax2.set_xticks([17968, 17970, 17972], ["13/3/19", "15/3/19", "17/3/19"])
 ax2b.set_xticks([17973, 17975, 17977], ["18/3/19", "20/3/19", "22/3/19"])
 
 
-ax.vlines([17971.3], -800, 0, color="white", linestyle="--", linewidth=1)
+ax.vlines([17971.1], -800, 0, color="white", linestyle="--", linewidth=1)
 axb.vlines([17974.03], -800, 0, color="white", linestyle="--", linewidth=1)
-ax1.vlines([17971.3], -800, 0, color="white", linestyle="--", linewidth=1)
+ax1.vlines([17971.1], -800, 0, color="white", linestyle="--", linewidth=1)
 ax1b.vlines([17974.03], -800, 0, color="white", linestyle="--", linewidth=1)
-ax2.vlines([17971.3], -6000, 0, color="black", linestyle="--", linewidth=1)
+ax2.vlines([17971.1], -6000, 0, color="black", linestyle="--", linewidth=1)
 ax2b.vlines([17974.03], -6000, 0, color="black", linestyle="--", linewidth=1)
 
 ax2.grid(alpha=0.5)
