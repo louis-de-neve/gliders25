@@ -87,4 +87,4 @@ ax.legend()
 ax.grid(alpha=0.5)
 
 #fig.tight_layout()
-plt.savefig("Louis/figures/Strat.png", dpi=300)
+plt.savefig("Louis/outputs/strat.png", dpi=300)

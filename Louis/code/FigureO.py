@@ -80,5 +80,5 @@ ax.legend(handles=[bplot1["boxes"][0], bplot2["boxes"][0], line],
 
 # ax.grid(axis="y", alpha=0.5)
 fig.tight_layout()
-plt.savefig("Louis/figures/bubble_correction_improvement_factor.png", dpi=300)
+plt.savefig("Louis/figures/figureO.png", dpi=300)
 #plt.show()
