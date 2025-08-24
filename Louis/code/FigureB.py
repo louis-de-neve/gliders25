@@ -7,7 +7,7 @@ transects, profiles = import_split_and_make_transects(use_cache=True,
 
 
 fig = plt.figure(figsize=(6, 6))
-ax = fig.add_axes([0.11, 0.1, 0.86, 0.87])
+ax = fig.add_axes([0.12, 0.1, 0.85, 0.87])
 
 
 #a, b, c = 530, 563, 750
@@ -33,18 +33,21 @@ for profile, label, color in profiles_to_plot:
     df["depth"] = df["depth"].round(0)
     d = df.groupby("depth")["density_anomaly"].mean()
 
-    ax.plot(d,
+    ax.plot(d.values,
+            -d.index,
             label=label,
             color=color,
-            linewidth="2")
-ax.hlines(0.03, 0, 1000, color="red", linestyles="dashed", label=r"$\Delta \rho$ = 0.03")
+            linewidth=2)
+ax.vlines(0.03, -1000, 1000, color="red", linestyles="dashed", label=r"$\Delta \rho$ = 0.03")
 
 
-ax.set_xlim(0, 120)
-ax.set_ylim(-0.01, 0.1)
-ax.set_xlabel("Depth (m)")
-ax.set_ylabel(r"Density Anomaly, $\Delta \rho$ (kg m$^{-3}$)")
-ax.legend(loc="upper left")
+ax.set_ylim(-120, 0)
+ax.set_xlim(-0.01, 0.45)
+ax.set_ylabel("Depth (m)")
+ax.set_xlabel(r"Density Anomaly, $\Delta \rho$ (kg m$^{-3}$)")
+ax.legend(loc="upper right")
 ax.grid(alpha=0.5)
+
+
 #fig.tight_layout()
 plt.savefig("Louis/figures/figureB.png", dpi=300)

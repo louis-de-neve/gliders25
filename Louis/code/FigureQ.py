@@ -96,6 +96,7 @@ for sections, name, ax in zip([int_2_day_sections, ext_2_day_sections], ["Interi
         sigma = np.diag(pcov)[0]**0.5
         ci = sigma * tval
         scatter_marker = ax.scatter(depths, binned_data, marker="x", color="black", linewidth=1)
+        print(name, binned_data[2])
         bs.append(b)
         cis.append(ci)
 
